@@ -1,0 +1,189 @@
+---
+title: "Getting started with utilscidados"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with utilscidados}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(utilscidados)
+```
+
+## What this package is for
+
+`utilscidados` collects the small helpers we reach for at Insper
+Cidades when preparing data for two specific destinations:
+
+1.  **Insper's Dataverse.** Datasets published there must be shipped
+    in several file formats with predictable naming and accompanied
+    by column-level documentation. `export_table()` /
+    `export_shapefile()` produce the full Dataverse-compliant set in
+    one call (`extension = "dataverse"`), while
+    `build_documentation()` and `create_documentation_index()` build
+    the documentation tables.
+
+2.  **Mapbox Studio (GeoPortal).** Spatial layers are uploaded as
+    GeoJSON or GeoPackage in WGS84. `export_shapefile()` reprojects
+    the input, sanitises the file name, and writes both formats so
+    the layer is ready to upload without per-dataset wrangling.
+
+All exporters share consistent defaults, overwrite protection, and
+`cli`-styled progress messages.
+
+The chunks below are not evaluated when the vignette is built (they
+would litter `tempdir()` with files); copy them into a session if you
+want to try them.
+
+## Exporting a tabular dataset
+
+`export_table()` writes a data frame to one or more file formats in a
+common output directory:
+
+```{r}
+out <- tempdir()
+
+# Single format
+export_table(
+  iris,
+  out_dir   = out,
+  file_name = "iris",
+  extension = "parquet"
+)
+
+# Multiple formats at once
+export_table(
+  iris,
+  out_dir   = out,
+  file_name = "iris",
+  extension = c("csv", "parquet", "rds"),
+  overwrite = TRUE
+)
+```
+
+`extension = "all"` writes every supported format; `extension =
+"dataverse"` writes the formats accepted by Dataverse (csv, xlsx,
+parquet).
+
+CSV output is gzip-compressed for data frames above 2 million rows
+(file extension becomes `.csv.gz`). XLSX output above the Excel row
+limit still attempts to write, but emits a warning.
+
+## Exporting a spatial dataset
+
+`export_shapefile()` is the spatial counterpart. The argument shape
+matches `export_table()`:
+
+```{r}
+nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
+
+export_shapefile(
+  nc,
+  out_dir   = out,
+  file_name = "north_carolina",
+  extension = "dataverse"
+)
+```
+
+Notes:
+
+* GeoJSON is reprojected to WGS84 (EPSG:4326).
+* Shapefile output is placed in a subdirectory named after the file,
+  because a shapefile is really a set of sidecar files (`.shp`,
+  `.shx`, `.dbf`, ...).
+* GeoParquet is written via `sfarrow::st_write_parquet()`.
+
+## File name sanitization
+
+Both `export_table()` and `export_shapefile()` lower-case the
+`file_name` and replace runs of non-alphanumerics with `_`. This means
+the same input produces a filesystem-safe name on every platform:
+
+```{r}
+# These all produce the same base file name: "north_carolina_2024"
+export_table(iris, file_name = "North Carolina 2024", out_dir = out)
+export_table(iris, file_name = "north-carolina-2024", out_dir = out)
+export_table(iris, file_name = "North_Carolina/2024", out_dir = out)
+```
+
+## Multi-sheet Excel workbooks
+
+When you want a single `.xlsx` file with one sheet per data frame,
+reach for `export_tables_to_excel()`:
+
+```{r}
+tables <- list(
+  iris   = iris,
+  mtcars = mtcars
+)
+
+export_tables_to_excel(
+  tables    = tables,
+  file_name = file.path(out, "example.xlsx")
+)
+```
+
+Names of the input list become sheet names, truncated to 31 characters
+(Excel's limit) and made unique if needed. Headers are bold; column
+widths are auto-sized.
+
+## Building a data dictionary
+
+For published datasets we usually ship a column-level data dictionary
+alongside the data. `build_documentation()` profiles each column
+(type, sample values, missingness) and merges in any manual
+descriptions you provide:
+
+```{r}
+descs <- tibble::tibble(
+  col_names   = c("Sepal.Length", "Species"),
+  description = c("Sepal length in cm", "Iris species")
+)
+
+doc <- build_documentation(iris, tbl_description = descs)
+doc
+```
+
+The resulting tibble has the Portuguese-language column labels we use
+in published documentation (`Nome da Coluna`, `Tipo da Coluna`,
+`Valores`, `Descrição`, `Percentual de Obs. Ausentes`,
+`Percentual de Preenchimento`).
+
+`build_documentation()` works on plain data frames and on `sf`
+objects; if you pass `sf`, geometry is dropped before profiling.
+
+When you ship more than one table, build a small index too:
+
+```{r}
+create_documentation_index(
+  name_file  = c("dados_2023.csv", "dados_2024.csv"),
+  name_table = c("dados_2023", "dados_2024")
+)
+```
+
+A typical publication workflow then becomes:
+
+```{r}
+docs <- lapply(list(iris, mtcars), build_documentation)
+names(docs) <- c("iris", "mtcars")
+
+# Combine with the file/table index as the first sheet
+docs <- c(
+  list(`indice` = create_documentation_index(
+    name_file  = c("iris.csv", "mtcars.csv"),
+    name_table = c("iris", "mtcars")
+  )),
+  docs
+)
+
+export_tables_to_excel(docs, file.path(out, "documentation.xlsx"))
+```
