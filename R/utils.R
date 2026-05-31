@@ -19,27 +19,20 @@ clean_file_name <- function(file_name) {
 
 #' Resolve an output directory, creating it if needed
 #'
-#' If `out_dir` is empty, returns the current working directory. Otherwise
-#' creates the directory (recursively) if it does not exist.
+#' Creates `out_dir` (recursively) if it does not exist.
 #'
-#' @param out_dir Character scalar with a directory path, or `""`.
-#' @return Normalized directory path (character scalar).
+#' @param out_dir Character scalar with a directory path.
+#' @return The directory path (unchanged).
 #' @keywords internal
 #' @noRd
 resolve_out_dir <- function(out_dir) {
-  if (identical(out_dir, "") || is.null(out_dir)) {
-    out_dir <- getwd()
-    cli::cli_inform(
-      "No output directory specified. Using current working directory: {.path {out_dir}}"
-    )
-    return(out_dir)
+  if (!is.character(out_dir) || length(out_dir) != 1) {
+    cli::cli_abort("{.arg out_dir} must be a single character path.")
   }
-
   if (!dir.exists(out_dir)) {
     dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
     cli::cli_inform("Created output directory: {.path {out_dir}}")
   }
-
   out_dir
 }
 
@@ -99,6 +92,72 @@ check_extension <- function(extension, valid) {
     )
   }
   invisible(TRUE)
+}
+
+#' Resolve a vector of requested extensions to a vector of format keys
+#'
+#' Handles the `"all"` and `"dataverse"` aliases against a registry of
+#' format specs (each of which may set `dataverse = TRUE`).
+#'
+#' @keywords internal
+#' @noRd
+resolve_formats <- function(extension, registry) {
+  all_fmts <- names(registry)
+  if ("all" %in% extension) {
+    return(all_fmts)
+  }
+  fmts <- intersect(extension, all_fmts)
+  if ("dataverse" %in% extension) {
+    dv <- names(registry)[
+      vapply(registry, \(s) isTRUE(s$dataverse), logical(1))
+    ]
+    fmts <- union(fmts, dv)
+  }
+  fmts
+}
+
+#' Write one format from a registry spec
+#'
+#' Builds the path (via `spec$path_fn` if present), runs `spec$pre`, then
+#' calls `spec$writer` under [write_with_check()] semantics.
+#'
+#' @return Character vector of paths actually written (length 0 on
+#'   skip or failure).
+#' @keywords internal
+#' @noRd
+write_via_spec <- function(spec, dat, out_dir, clean_name, overwrite) {
+  path <- if (is.null(spec$path_fn)) {
+    file.path(out_dir, paste0(clean_name, spec$ext))
+  } else {
+    spec$path_fn(dat, out_dir, clean_name)
+  }
+
+  if (!is.null(spec$pre)) spec$pre(dat)
+
+  if (file.exists(path) && !overwrite) {
+    cli::cli_warn(
+      "{spec$label} file already exists: {.file {basename(path)}}. Use {.arg overwrite = TRUE} to replace it."
+    )
+    return(character(0))
+  }
+  existed <- file.exists(path)
+
+  tryCatch(
+    {
+      spec$writer(dat, path, overwrite = overwrite)
+      written <- if (!is.null(spec$enumerate)) spec$enumerate(path) else path
+      action <- if (existed) "Overwritten" else "Exported"
+      cli::cli_inform("{action} {spec$label}: {.file {basename(written[1])}}")
+      if (length(written) > 1) {
+        cli::cli_inform("Components: {.file {basename(written)}}")
+      }
+      written
+    },
+    error = function(e) {
+      cli::cli_warn("Failed to export {spec$label}: {e$message}")
+      character(0)
+    }
+  )
 }
 
 #' Summarise a set of exported files for the user

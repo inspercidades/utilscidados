@@ -6,8 +6,8 @@
 \usage{
 export_table(
   dat,
-  out_dir = "",
-  file_name = NULL,
+  file_name,
+  out_dir = getwd(),
   extension = "all",
   overwrite = FALSE
 )
@@ -15,19 +15,17 @@ export_table(
 \arguments{
 \item{dat}{A \code{data.frame}, \code{tibble}, or \code{data.table}.}
 
-\item{out_dir}{Character scalar with the output directory. If \code{""}
-(default), files are written to the current working directory. The
-directory is created if it does not exist.}
+\item{file_name}{Character scalar with the base file name (no
+extension). Required. Will be sanitised for filesystem safety.}
 
-\item{file_name}{Character scalar with the base file name (without
-extension). Required. Will be sanitized to be filesystem-safe.}
+\item{out_dir}{Character scalar with the output directory. Defaults
+to the current working directory; created if it does not exist.}
 
-\item{extension}{Character vector specifying the format(s) to export.
-Valid values:
+\item{extension}{Character vector of format(s) to export. Valid:
 \itemize{
 \item \code{"all"} (default): csv, xlsx, parquet, rds, feather
 \item \code{"dataverse"}: csv, xlsx, parquet (formats accepted by Dataverse)
-\item \code{"csv"}, \code{"xlsx"}, \code{"parquet"}, \code{"rds"}, \code{"feather"}: a single format
+\item One or more of: \code{"csv"}, \code{"xlsx"}, \code{"parquet"}, \code{"rds"}, \code{"feather"}
 }}
 
 \item{overwrite}{Logical. If \code{TRUE}, existing files are replaced. If
@@ -38,25 +36,23 @@ Invisibly returns a character vector of paths to successfully
 exported files.
 }
 \description{
-Writes a single data frame (or tibble / data.table) to one or more file
-formats in a common output directory, using a sanitized base file name.
+Writes a single data frame (or tibble / data.table) to one or more
+file formats in a common output directory, using a sanitised base
+file name.
 }
 \details{
-For very large data frames (more than 2 million rows), CSV output is
-gzip-compressed and written with a \code{.csv.gz} extension via
-\code{\link[data.table:fwrite]{data.table::fwrite()}}.
-
-XLSX output above the Excel row limit (~1,048,576 rows) emits a warning
-but still attempts to write. Prefer parquet or csv.gz for large data.
+For data frames above 2 million rows, CSV output is gzip-compressed
+and gets a \code{.csv.gz} extension. XLSX output above the Excel row
+limit (~1,048,576) emits a warning but still attempts to write.
 }
 \examples{
 \dontrun{
 iris_tbl <- tibble::as_tibble(iris)
-export_table(iris_tbl, out_dir = tempdir(), file_name = "iris")
+export_table(iris_tbl, "iris", out_dir = tempdir())
 export_table(
   iris_tbl,
-  out_dir = tempdir(),
-  file_name = "iris",
+  "iris",
+  out_dir   = tempdir(),
   extension = c("csv", "parquet"),
   overwrite = TRUE
 )
@@ -64,6 +60,5 @@ export_table(
 
 }
 \seealso{
-\code{\link[=export_shapefile]{export_shapefile()}} for spatial data, \code{\link[=export_tables_to_excel]{export_tables_to_excel()}}
-for multi-sheet Excel workbooks.
+\code{\link[=export_shapefile]{export_shapefile()}}, \code{\link[=export_tables_to_excel]{export_tables_to_excel()}}.
 }

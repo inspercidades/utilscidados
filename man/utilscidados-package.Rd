@@ -23,6 +23,7 @@ with automatic reprojection to WGS84 and consistent naming.
 \item \code{\link[=export_table]{export_table()}} - write a data frame to csv / xlsx / parquet / rds / feather
 \item \code{\link[=export_shapefile]{export_shapefile()}} - write an \code{sf} object to geojson / gpkg / shp / geoparquet
 \item \code{\link[=export_tables_to_excel]{export_tables_to_excel()}} - write a list of data frames to a multi-sheet xlsx
+\item \code{\link[=mapbox_upload]{mapbox_upload()}} - upload an \code{sf} object to Mapbox Studio as a tileset
 \item \code{\link[=build_documentation]{build_documentation()}} - build a column-level data dictionary
 \item \code{\link[=create_documentation_index]{create_documentation_index()}} - build an index of file/table names
 }

@@ -40,6 +40,7 @@ remotes::install_github("portalcidados/utilscidados")
 | `export_table()`               | Write a data frame to csv, xlsx, parquet, rds and/or feather  |
 | `export_shapefile()`           | Write an `sf` object to geojson, gpkg, shp and/or geoparquet  |
 | `export_tables_to_excel()`     | Write a named list of data frames to a multi-sheet xlsx file  |
+| `mapbox_upload()`              | Upload an `sf` object to Mapbox Studio (GeoPortal) as a tileset |
 | `build_documentation()`        | Build a column-level data dictionary for a dataset            |
 | `create_documentation_index()` | Build an index mapping file names to table/sheet names        |
 
@@ -65,8 +66,8 @@ library(utilscidados)
 # 1. Export the data in Dataverse-friendly formats
 export_table(
   my_table,
+  "indicadores municipais 2024",   # sanitised to "indicadores_municipais_2024"
   out_dir   = "dataverse-out",
-  file_name = "indicadores municipais 2024",  # sanitized to "indicadores_municipais_2024"
   extension = "dataverse"
 )
 
@@ -93,16 +94,25 @@ export_tables_to_excel(
 ### GeoPortal (Mapbox Studio) upload workflow
 
 ``` r
-# Read whatever source format we received the layer in
 camadas <- sf::st_read("source/camada_zoneamento.shp")
 
-# Write WGS84 GeoJSON + GeoPackage with a clean name, ready for Mapbox
+# Option A — write WGS84 files locally for manual upload / archiving
 export_shapefile(
   camadas,
+  "zoneamento_municipal",
   out_dir   = "mapbox-upload",
-  file_name = "zoneamento_municipal",
   extension = c("geojson", "gpkg"),
   overwrite = TRUE
+)
+
+# Option B — upload directly to Mapbox Studio in one call.
+# Requires the suggested mapboxapi package and MAPBOX_SECRET_TOKEN in env.
+mapbox_upload(
+  camadas,
+  username     = "insper_cidados",
+  tileset_id   = "zoneamento_municipal",
+  simplify     = 0.1,           # rmapshaper::ms_simplify(keep = 0.1)
+  wait         = TRUE
 )
 ```
 

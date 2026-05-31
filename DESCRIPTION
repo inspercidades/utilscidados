@@ -28,6 +28,7 @@ Imports:
     dplyr,
     openxlsx,
     readr,
+    rlang,
     sf,
     sfarrow,
     stats,
@@ -38,6 +39,8 @@ Imports:
     writexl
 Suggests:
     knitr,
+    mapboxapi,
+    rmapshaper,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

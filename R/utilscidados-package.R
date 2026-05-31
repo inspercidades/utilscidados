@@ -12,6 +12,7 @@
 #' * [export_table()] - write a data frame to csv / xlsx / parquet / rds / feather
 #' * [export_shapefile()] - write an `sf` object to geojson / gpkg / shp / geoparquet
 #' * [export_tables_to_excel()] - write a list of data frames to a multi-sheet xlsx
+#' * [mapbox_upload()] - upload an `sf` object to Mapbox Studio as a tileset
 #' * [build_documentation()] - build a column-level data dictionary
 #' * [create_documentation_index()] - build an index of file/table names
 #'

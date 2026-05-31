@@ -1,21 +1,73 @@
 # export_shapefile ----
 
+#' Per-format specifications for `export_shapefile()`
+#' @keywords internal
+#' @noRd
+SHP_FORMATS <- list(
+  geojson = list(
+    ext = ".geojson",
+    label = "GeoJSON",
+    dataverse = TRUE,
+    writer = function(shp, path, overwrite) {
+      wgs_shp <- sf::st_transform(shp, crs = 4326)
+      sf::st_write(wgs_shp, path, quiet = TRUE, delete_dsn = overwrite)
+    }
+  ),
+  gpkg = list(
+    ext = ".gpkg",
+    label = "GeoPackage",
+    dataverse = TRUE,
+    writer = function(shp, path, overwrite) {
+      sf::st_write(shp, path, quiet = TRUE, delete_dsn = overwrite)
+    }
+  ),
+  shp = list(
+    label = "Shapefile",
+    dataverse = TRUE,
+    path_fn = function(shp, out_dir, clean_name) {
+      file.path(out_dir, clean_name, paste0(clean_name, ".shp"))
+    },
+    writer = function(shp, path, overwrite) {
+      shp_dir <- dirname(path)
+      if (!dir.exists(shp_dir)) {
+        dir.create(shp_dir, recursive = TRUE, showWarnings = FALSE)
+      }
+      sf::st_write(shp, path, quiet = TRUE, delete_dsn = overwrite)
+    },
+    enumerate = function(path) {
+      clean_name <- tools::file_path_sans_ext(basename(path))
+      list.files(
+        dirname(path),
+        pattern = paste0("^", clean_name, "\\."),
+        full.names = TRUE
+      )
+    }
+  ),
+  geoparquet = list(
+    ext = ".parquet",
+    label = "GeoParquet",
+    dataverse = TRUE,
+    writer = function(shp, path, overwrite) {
+      sfarrow::st_write_parquet(shp, path)
+    }
+  )
+)
+
 #' Export Spatial Data to Multiple Formats
 #'
 #' Writes a single `sf` object to one or more spatial file formats in a
-#' common output directory, using a sanitized base file name.
+#' common output directory, using a sanitised base file name.
 #'
 #' @param shp An `sf` object.
-#' @param out_dir Character scalar with the output directory. If `""`
-#'   (default), files are written to the current working directory. The
-#'   directory is created if it does not exist.
-#' @param file_name Character scalar with the base file name (without
-#'   extension). Required. Will be sanitized to be filesystem-safe.
-#' @param extension Character vector specifying the format(s) to export.
-#'   Valid values:
+#' @param file_name Character scalar with the base file name (no
+#'   extension). Required. Will be sanitised for filesystem safety.
+#' @param out_dir Character scalar with the output directory. Defaults
+#'   to the current working directory; created if it does not exist.
+#' @param extension Character vector of format(s) to export. Valid:
 #'   * `"all"` (default): geojson, gpkg, shp, geoparquet
-#'   * `"dataverse"`: geojson, gpkg, shp, geoparquet (suitable for Dataverse)
-#'   * `"geojson"`, `"gpkg"`, `"shp"`, `"parquet"`, `"geoparquet"`: a single format
+#'   * `"dataverse"`: geojson, gpkg, shp, geoparquet
+#'   * One or more of: `"geojson"`, `"gpkg"`, `"shp"`,
+#'     `"geoparquet"` (or `"parquet"` as a synonym)
 #' @param overwrite Logical. If `TRUE`, existing files are replaced. If
 #'   `FALSE` (default), existing files are skipped with a warning.
 #'
@@ -32,123 +84,55 @@
 #' @examples
 #' \dontrun{
 #' nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
-#' export_shapefile(nc, out_dir = tempdir(), file_name = "north_carolina")
+#' export_shapefile(nc, "north_carolina", out_dir = tempdir())
 #' export_shapefile(
 #'   nc,
-#'   out_dir = tempdir(),
-#'   file_name = "north_carolina",
+#'   "north_carolina",
+#'   out_dir   = tempdir(),
 #'   extension = "geojson",
 #'   overwrite = TRUE
 #' )
 #' }
 #'
-#' @seealso [sf::st_write()], [export_table()] for tabular data.
+#' @seealso [sf::st_write()], [export_table()].
+#' @importFrom sfarrow st_write_parquet
 #' @export
 export_shapefile <- function(
   shp,
-  out_dir = "",
-  file_name = NULL,
+  file_name,
+  out_dir = getwd(),
   extension = "all",
   overwrite = FALSE
 ) {
-  ## Input validation ----
   if (!inherits(shp, "sf")) {
     cli::cli_abort("Argument {.arg shp} must be an {.cls sf} object.")
   }
-  if (is.null(file_name)) {
-    cli::cli_abort("Must provide a {.arg file_name} for the exported files.")
+  if (missing(file_name) || !is.character(file_name) || length(file_name) != 1) {
+    cli::cli_abort("Argument {.arg file_name} must be a single character string.")
   }
 
-  valid_ext <- c(
-    "all",
-    "dataverse",
-    "geojson",
-    "gpkg",
-    "shp",
-    "parquet",
-    "geoparquet"
-  )
+  if ("parquet" %in% extension) {
+    extension <- unique(c(extension, "geoparquet"))
+    extension <- setdiff(extension, "parquet")
+  }
+
+  valid_ext <- c("all", "dataverse", names(SHP_FORMATS))
   check_extension(extension, valid_ext)
 
   clean_name <- clean_file_name(file_name)
   out_dir <- resolve_out_dir(out_dir)
 
-  wants <- function(fmt) {
-    fmts_dataverse <- c("geojson", "gpkg", "shp", "geoparquet")
-    "all" %in% extension ||
-      (fmt %in% fmts_dataverse && "dataverse" %in% extension) ||
-      fmt %in% extension ||
-      (fmt == "geoparquet" && "parquet" %in% extension)
-  }
-
+  formats <- resolve_formats(extension, SHP_FORMATS)
   exported_files <- character()
-
-  ## GeoJSON ----
-  if (wants("geojson")) {
-    geojson_path <- file.path(out_dir, paste0(clean_name, ".geojson"))
-    written <- write_with_check(geojson_path, "GeoJSON", overwrite, function() {
-      wgs_shp <- sf::st_transform(shp, crs = 4326)
-      sf::st_write(wgs_shp, geojson_path, quiet = TRUE, delete_dsn = overwrite)
-    })
-    if (!is.null(written)) exported_files <- c(exported_files, written)
-  }
-
-  ## GeoPackage ----
-  if (wants("gpkg")) {
-    gpkg_path <- file.path(out_dir, paste0(clean_name, ".gpkg"))
-    written <- write_with_check(gpkg_path, "GeoPackage", overwrite, function() {
-      sf::st_write(shp, gpkg_path, quiet = TRUE, delete_dsn = overwrite)
-    })
-    if (!is.null(written)) exported_files <- c(exported_files, written)
-  }
-
-  ## Shapefile ----
-  if (wants("shp")) {
-    shp_dir <- file.path(out_dir, clean_name)
-    shp_path <- file.path(shp_dir, paste0(clean_name, ".shp"))
-
-    if (file.exists(shp_path) && !overwrite) {
-      cli::cli_warn(
-        "Shapefile already exists: {.file {basename(shp_path)}}. Use {.arg overwrite = TRUE} to replace it."
-      )
-    } else {
-      if (!dir.exists(shp_dir)) {
-        dir.create(shp_dir, recursive = TRUE, showWarnings = FALSE)
-      }
-      tryCatch(
-        {
-          sf::st_write(shp, shp_path, quiet = TRUE, delete_dsn = overwrite)
-          shp_components <- list.files(
-            shp_dir,
-            pattern = paste0("^", clean_name, "\\."),
-            full.names = TRUE
-          )
-          exported_files <- c(exported_files, shp_components)
-          action <- if (overwrite) "Overwritten" else "Exported"
-          cli::cli_inform(
-            "{action} Shapefile components in directory: {.path {basename(shp_dir)}}"
-          )
-          cli::cli_inform("Components: {.file {basename(shp_components)}}")
-        },
-        error = function(e) {
-          cli::cli_warn("Failed to export Shapefile: {e$message}")
-        }
-      )
-    }
-  }
-
-  ## GeoParquet ----
-  if (wants("geoparquet")) {
-    parquet_path <- file.path(out_dir, paste0(clean_name, ".parquet"))
-    written <- write_with_check(
-      parquet_path,
-      "GeoParquet",
-      overwrite,
-      function() {
-        sfarrow::st_write_parquet(shp, parquet_path)
-      }
+  for (fmt in formats) {
+    written <- write_via_spec(
+      SHP_FORMATS[[fmt]],
+      shp,
+      out_dir,
+      clean_name,
+      overwrite
     )
-    if (!is.null(written)) exported_files <- c(exported_files, written)
+    exported_files <- c(exported_files, written)
   }
 
   summarise_exports(exported_files, out_dir, epsg = sf::st_crs(shp)$epsg)

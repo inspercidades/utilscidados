@@ -53,18 +53,13 @@ common output directory:
 out <- tempdir()
 
 # Single format
-export_table(
-  iris,
-  out_dir   = out,
-  file_name = "iris",
-  extension = "parquet"
-)
+export_table(iris, "iris", out_dir = out, extension = "parquet")
 
 # Multiple formats at once
 export_table(
   iris,
+  "iris",
   out_dir   = out,
-  file_name = "iris",
   extension = c("csv", "parquet", "rds"),
   overwrite = TRUE
 )
@@ -86,12 +81,7 @@ matches `export_table()`:
 ```{r}
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
 
-export_shapefile(
-  nc,
-  out_dir   = out,
-  file_name = "north_carolina",
-  extension = "dataverse"
-)
+export_shapefile(nc, "north_carolina", out_dir = out, extension = "dataverse")
 ```
 
 Notes:
@@ -102,17 +92,38 @@ Notes:
   `.shx`, `.dbf`, ...).
 * GeoParquet is written via `sfarrow::st_write_parquet()`.
 
-## File name sanitization
+## Uploading a layer to Mapbox Studio (GeoPortal)
 
-Both `export_table()` and `export_shapefile()` lower-case the
-`file_name` and replace runs of non-alphanumerics with `_`. This means
-the same input produces a filesystem-safe name on every platform:
+For layers that need to be served from GeoPortal, `mapbox_upload()`
+sends the data straight to Mapbox as a tileset. It accepts either an
+`sf` object or a path, can simplify the geometry on the way, and
+optionally blocks until Mapbox finishes processing.
 
 ```{r}
-# These all produce the same base file name: "north_carolina_2024"
-export_table(iris, file_name = "North Carolina 2024", out_dir = out)
-export_table(iris, file_name = "north-carolina-2024", out_dir = out)
-export_table(iris, file_name = "North_Carolina/2024", out_dir = out)
+# Requires the suggested `mapboxapi` package (and `rmapshaper` if
+# `simplify` is not FALSE). Reads MAPBOX_SECRET_TOKEN from env by
+# default.
+mapbox_upload(
+  nc,
+  username   = "insper_cidados",
+  tileset_id = "nc_counties",
+  simplify   = 0.1,        # rmapshaper::ms_simplify(keep = 0.1)
+  wait       = TRUE
+)
+```
+
+## File name sanitization
+
+`export_table()`, `export_shapefile()`, and `mapbox_upload()` all
+lower-case the supplied name and replace runs of non-alphanumerics
+with `_`. The same input produces a filesystem-safe / Mapbox-safe
+name on every platform:
+
+```{r}
+# These all produce the same base name: "north_carolina_2024"
+export_table(iris, "North Carolina 2024", out_dir = out)
+export_table(iris, "north-carolina-2024", out_dir = out)
+export_table(iris, "North_Carolina/2024", out_dir = out)
 ```
 
 ## Multi-sheet Excel workbooks

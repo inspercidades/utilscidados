@@ -6,8 +6,8 @@
 \usage{
 export_shapefile(
   shp,
-  out_dir = "",
-  file_name = NULL,
+  file_name,
+  out_dir = getwd(),
   extension = "all",
   overwrite = FALSE
 )
@@ -15,19 +15,18 @@ export_shapefile(
 \arguments{
 \item{shp}{An \code{sf} object.}
 
-\item{out_dir}{Character scalar with the output directory. If \code{""}
-(default), files are written to the current working directory. The
-directory is created if it does not exist.}
+\item{file_name}{Character scalar with the base file name (no
+extension). Required. Will be sanitised for filesystem safety.}
 
-\item{file_name}{Character scalar with the base file name (without
-extension). Required. Will be sanitized to be filesystem-safe.}
+\item{out_dir}{Character scalar with the output directory. Defaults
+to the current working directory; created if it does not exist.}
 
-\item{extension}{Character vector specifying the format(s) to export.
-Valid values:
+\item{extension}{Character vector of format(s) to export. Valid:
 \itemize{
 \item \code{"all"} (default): geojson, gpkg, shp, geoparquet
-\item \code{"dataverse"}: geojson, gpkg, shp, geoparquet (suitable for Dataverse)
-\item \code{"geojson"}, \code{"gpkg"}, \code{"shp"}, \code{"parquet"}, \code{"geoparquet"}: a single format
+\item \code{"dataverse"}: geojson, gpkg, shp, geoparquet
+\item One or more of: \code{"geojson"}, \code{"gpkg"}, \code{"shp"},
+\code{"geoparquet"} (or \code{"parquet"} as a synonym)
 }}
 
 \item{overwrite}{Logical. If \code{TRUE}, existing files are replaced. If
@@ -39,7 +38,7 @@ exported files.
 }
 \description{
 Writes a single \code{sf} object to one or more spatial file formats in a
-common output directory, using a sanitized base file name.
+common output directory, using a sanitised base file name.
 }
 \details{
 \itemize{
@@ -53,11 +52,11 @@ file name, since a shapefile is a set of sidecar files (\code{.shp},
 \examples{
 \dontrun{
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
-export_shapefile(nc, out_dir = tempdir(), file_name = "north_carolina")
+export_shapefile(nc, "north_carolina", out_dir = tempdir())
 export_shapefile(
   nc,
-  out_dir = tempdir(),
-  file_name = "north_carolina",
+  "north_carolina",
+  out_dir   = tempdir(),
   extension = "geojson",
   overwrite = TRUE
 )
@@ -65,5 +64,5 @@ export_shapefile(
 
 }
 \seealso{
-\code{\link[sf:st_write]{sf::st_write()}}, \code{\link[=export_table]{export_table()}} for tabular data.
+\code{\link[sf:st_write]{sf::st_write()}}, \code{\link[=export_table]{export_table()}}.
 }
