@@ -16,7 +16,11 @@ The package exists to support two recurring workflows:
     (`export_table()`, `export_shapefile()`) that produce the full
     Dataverse-compliant set in one call, plus
     `build_documentation()` / `create_documentation_index()` to
-    generate the documentation tables that accompany the data.
+    generate the documentation tables that accompany the data,
+    `build_readme()` to scaffold the bilingual README that ships
+    alongside a dataset, and `read_metadata()` / `update_metadata()` /
+    `create_metadata_sheet()` / `validate_metadata()` to manage the
+    Dataverse metadata workbook itself.
 
 2.  **Simplify the shapefile -> Mapbox Studio (GeoPortal) pipeline.**
     GeoPortal ingests GeoJSON / GeoPackage, in WGS84, with predictable
@@ -43,6 +47,11 @@ remotes::install_github("portalcidados/utilscidados")
 | `mapbox_upload()`              | Upload an `sf` object to Mapbox Studio (GeoPortal) as a tileset |
 | `build_documentation()`        | Build a column-level data dictionary for a dataset            |
 | `create_documentation_index()` | Build an index mapping file names to table/sheet names        |
+| `build_readme()`               | Generate a bilingual (EN/PT) README.txt skeleton              |
+| `read_metadata()`              | Read field values from a Dataverse metadata workbook          |
+| `update_metadata()`            | Write field values into a Dataverse metadata workbook         |
+| `create_metadata_sheet()`      | Clone a template sheet for a new dataset in the workbook      |
+| `validate_metadata()`          | Check a metadata sheet for missing fields or placeholders     |
 
 Shared conventions across exporters:
 
