@@ -165,7 +165,7 @@ glimpse_text_values <- function(x) {
     return("Primeiros valores: -")
   }
   tsl <- cumsum(nchar(x10))
-  if (min(tsl) > 50) {
+  if (min(tsl) >= 50) {
     label_text <- substr(x10[1], 1, 50)
     return(stringr::str_c("Primeiros valores: ", label_text, ", ..."))
   }
