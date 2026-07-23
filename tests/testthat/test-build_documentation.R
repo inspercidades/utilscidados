@@ -67,3 +67,22 @@ test_that("format_documentation keeps NA descriptions as NA", {
   out <- utilscidados:::format_documentation(dat)
   expect_true(is.na(out[[4]][1]))
 })
+
+test_that("get_unique_values handles all-NA logical column", {
+  dat <- data.frame(
+    id = 1:3,
+    flag = c(NA, NA, NA)
+  )
+  dat$flag <- as.logical(dat$flag)
+  out <- utilscidados:::get_unique_values(dat)
+  expect_equal(out$flag, "Primeiros valores: -")
+})
+
+test_that("get_unique_values handles mixed logical column", {
+  dat <- data.frame(
+    id = 1:3,
+    flag = c(TRUE, FALSE, TRUE)
+  )
+  out <- utilscidados:::get_unique_values(dat)
+  expect_equal(out$flag, "Primeiros valores: TRUE, FALSE")
+})

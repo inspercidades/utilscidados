@@ -124,6 +124,7 @@ get_unique_values <- function(dat) {
   col_names <- names(dat)
   is_text <- vapply(dat, \(x) is.character(x) || is.factor(x), logical(1))
   txt_cols <- col_names[is_text]
+  lgl_cols <- col_names[vapply(dat, is.logical, logical(1))]
   date_cols <- col_names[vapply(dat, \(x) inherits(x, "Date"), logical(1))]
   num_cols <- col_names[vapply(dat, is.numeric, logical(1))]
 
@@ -137,6 +138,14 @@ get_unique_values <- function(dat) {
       character(1)
     )
     result[txt_cols] <- txt_unique_values
+  }
+  if (length(lgl_cols) > 0) {
+    lgl_unique_values <- vapply(
+      dat[lgl_cols],
+      \(x) glimpse_text_values(as.character(x)),
+      character(1)
+    )
+    result[lgl_cols] <- lgl_unique_values
   }
   if (length(num_cols) > 0) {
     result[num_cols] <- "Cont\u00ednua"
