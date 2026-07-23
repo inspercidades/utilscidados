@@ -47,7 +47,6 @@ resolve_out_dir <- function(out_dir) {
 #' @param writer A function of no arguments that performs the write.
 #' @return The path (invisibly) on success, otherwise `NULL`.
 #' @keywords internal
-#' @noRd
 write_with_check <- function(path, label, overwrite, writer) {
   if (file.exists(path) && !overwrite) {
     cli::cli_warn(
