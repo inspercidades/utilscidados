@@ -38,3 +38,32 @@ test_that("build_documentation() does not error on a 50-character text column", 
   expect_equal(nrow(doc), 2)
   expect_true("Nome da Coluna" %in% names(doc))
 })
+
+test_that("format_documentation appends trailing period to descriptions missing one", {
+  dat <- data.frame(
+    col_names = c("x", "y"),
+    tipo_coluna = c("Num\u00e9rico", "Texto"),
+    valores = c("Cont\u00ednua", "a, b"),
+    description = c("no period", "has period."),
+    missing_percent = c(0, 0),
+    non_na_percent = c(100, 100),
+    stringsAsFactors = FALSE
+  )
+  out <- utilscidados:::format_documentation(dat)
+  expect_match(out[[4]][1], "\\.$")
+  expect_match(out[[4]][2], "\\.$")
+})
+
+test_that("format_documentation keeps NA descriptions as NA", {
+  dat <- data.frame(
+    col_names = "x",
+    tipo_coluna = "Num\u00e9rico",
+    valores = "Cont\u00ednua",
+    description = NA_character_,
+    missing_percent = 0,
+    non_na_percent = 100,
+    stringsAsFactors = FALSE
+  )
+  out <- utilscidados:::format_documentation(dat)
+  expect_true(is.na(out[[4]][1]))
+})

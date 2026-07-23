@@ -136,5 +136,5 @@ export_shapefile <- function(
   }
 
   summarise_exports(exported_files, out_dir, epsg = sf::st_crs(shp)$epsg)
-  invisible(exported_files)
+  return(invisible(exported_files))
 }

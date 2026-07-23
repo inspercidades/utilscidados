@@ -10,11 +10,12 @@
 #' @keywords internal
 #' @noRd
 clean_file_name <- function(file_name) {
-  file_name |>
+  return(file_name |>
     stringr::str_to_lower() |>
     stringr::str_replace_all("[^a-z0-9_]+", "_") |>
     stringr::str_replace_all("_{2,}", "_") |>
-    stringr::str_remove("^_+|_+$")
+    stringr::str_remove("^_+") |>
+    stringr::str_remove("_+$"))
 }
 
 #' Resolve an output directory, creating it if needed
@@ -33,7 +34,7 @@ resolve_out_dir <- function(out_dir) {
     dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
     cli::cli_inform("Created output directory: {.path {out_dir}}")
   }
-  out_dir
+  return(out_dir)
 }
 
 #' Write a file with overwrite-protection and standard logging
@@ -49,15 +50,16 @@ resolve_out_dir <- function(out_dir) {
 #' @keywords internal
 write_with_check <- function(path, label, overwrite, writer) {
   if (file.exists(path) && !overwrite) {
-    cli::cli_warn(
-      "{label} file already exists: {.file {basename(path)}}. Use {.arg overwrite = TRUE} to replace it."
-    )
+    cli::cli_warn(paste0(
+      "{label} file already exists: {.file {basename(path)}}. ",
+      "Use {.arg overwrite = TRUE} to replace it."
+    ))
     return(NULL)
   }
 
   existed <- file.exists(path)
 
-  tryCatch(
+  return(tryCatch(
     {
       writer()
       action <- if (existed) "Overwritten" else "Exported"
@@ -68,7 +70,7 @@ write_with_check <- function(path, label, overwrite, writer) {
       cli::cli_warn("Failed to export {label}: {e$message}")
       NULL
     }
-  )
+  ))
 }
 
 #' Validate that `extension` is a subset of `valid`
@@ -90,7 +92,7 @@ check_extension <- function(extension, valid) {
        Invalid value{?s}: {.val {bad}}."
     )
   }
-  invisible(TRUE)
+  return(invisible(TRUE))
 }
 
 #' Resolve a vector of requested extensions to a vector of format keys
@@ -112,7 +114,7 @@ resolve_formats <- function(extension, registry) {
     ]
     fmts <- union(fmts, dv)
   }
-  fmts
+  return(fmts)
 }
 
 #' Write one format from a registry spec
@@ -134,14 +136,15 @@ write_via_spec <- function(spec, dat, out_dir, clean_name, overwrite) {
   if (!is.null(spec$pre)) spec$pre(dat)
 
   if (file.exists(path) && !overwrite) {
-    cli::cli_warn(
-      "{spec$label} file already exists: {.file {basename(path)}}. Use {.arg overwrite = TRUE} to replace it."
-    )
+    cli::cli_warn(paste0(
+      "{spec$label} file already exists: {.file {basename(path)}}. ",
+      "Use {.arg overwrite = TRUE} to replace it."
+    ))
     return(character(0))
   }
   existed <- file.exists(path)
 
-  tryCatch(
+  return(tryCatch(
     {
       spec$writer(dat, path, overwrite = overwrite)
       written <- if (!is.null(spec$enumerate)) spec$enumerate(path) else path
@@ -156,7 +159,7 @@ write_via_spec <- function(spec, dat, out_dir, clean_name, overwrite) {
       cli::cli_warn("Failed to export {spec$label}: {e$message}")
       character(0)
     }
-  )
+  ))
 }
 
 #' Summarise a set of exported files for the user
@@ -184,5 +187,5 @@ summarise_exports <- function(exported_files, out_dir, epsg = NULL) {
     size_mb <- round(total_size / 1024^2, 2)
     cli::cli_inform("Total size: {size_mb} MB")
   }
-  invisible(NULL)
+  return(invisible(NULL))
 }
