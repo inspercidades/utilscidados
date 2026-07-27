@@ -12,7 +12,8 @@ The package supports two recurring workflows at Insper Cidades:
 \enumerate{
 \item Standardised data exports compliant with Insper's Dataverse
 protocols, including file-format coverage, sanitised file names,
-and column-level metadata (data dictionaries).
+column-level metadata (data dictionaries), README skeletons, and
+metadata workbook management.
 \item A simplified shapefile -> Mapbox Studio (GeoPortal) pipeline,
 with automatic reprojection to WGS84 and consistent naming.
 }
@@ -26,6 +27,12 @@ with automatic reprojection to WGS84 and consistent naming.
 \item \code{\link[=mapbox_upload]{mapbox_upload()}} - upload an \code{sf} object to Mapbox Studio as a tileset
 \item \code{\link[=build_documentation]{build_documentation()}} - build a column-level data dictionary
 \item \code{\link[=create_documentation_index]{create_documentation_index()}} - build an index of file/table names
+\item \code{\link[=build_readme]{build_readme()}} - generate a bilingual README.txt skeleton
+\item \code{\link[=read_metadata]{read_metadata()}} / \code{\link[=update_metadata]{update_metadata()}} - read or write values in a
+Dataverse metadata workbook
+\item \code{\link[=create_metadata_sheet]{create_metadata_sheet()}} - clone a template sheet for a new dataset
+\item \code{\link[=validate_metadata]{validate_metadata()}} - check a metadata sheet for missing fields or
+placeholder markers
 }
 
 Pass \code{extension = "dataverse"} to the exporters to select the

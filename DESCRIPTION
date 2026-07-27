@@ -9,11 +9,12 @@ Authors@R:
 Description: Helpers used at Insper Cidades (ONMS and Cidados) to
     standardise two recurring workflows: (1) preparing datasets for
     publication on Insper's Dataverse, including multi-format exports
-    with sanitised names and column-level data dictionaries; and
-    (2) preparing spatial layers for upload to Mapbox Studio
-    (GeoPortal), including reprojection to WGS84 and consistent
-    naming. Also provides a multi-sheet Excel writer for distributing
-    bundled tables and metadata.
+    with sanitised names, column-level data dictionaries, README
+    skeletons, and metadata workbook management; and (2) preparing
+    spatial layers for upload to Mapbox Studio (GeoPortal), including
+    reprojection to WGS84 and consistent naming. Also provides a
+    multi-sheet Excel writer for distributing bundled tables and
+    metadata.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -43,6 +44,7 @@ Suggests:
     mapboxapi,
     rmapshaper,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
