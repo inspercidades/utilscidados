@@ -35,13 +35,13 @@ Dataverse-compliant subset of formats.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/viniciusoike/utilscidados}
-  \item Report bugs at \url{https://github.com/viniciusoike/utilscidados/issues}
+  \item \url{https://github.com/portalcidados/utilscidados}
+  \item Report bugs at \url{https://github.com/portalcidados/utilscidados/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Vinicius Oike \email{viniciusor@insper.edu.br} [copyright holder]
+\strong{Maintainer}: Vinicius Oike \email{viniciusor@insper.edu.br} (\href{https://orcid.org/0009-0005-8015-9189}{ORCID}) [copyright holder]
 
 }
 \keyword{internal}

@@ -4,7 +4,8 @@ Version: 0.0.1
 Authors@R:
     person("Vinicius", "Oike",
            email = "viniciusor@insper.edu.br",
-           role = c("aut", "cre", "cph"))
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0009-0005-8015-9189"))
 Description: Helpers used at Insper Cidades (ONMS and Cidados) to
     standardise two recurring workflows: (1) preparing datasets for
     publication on Insper's Dataverse, including multi-format exports
@@ -17,8 +18,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-URL: https://github.com/viniciusoike/utilscidados
-BugReports: https://github.com/viniciusoike/utilscidados/issues
+URL: https://github.com/portalcidados/utilscidados
+BugReports: https://github.com/portalcidados/utilscidados/issues
 Depends:
     R (>= 4.1)
 Imports:
