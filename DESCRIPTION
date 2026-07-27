@@ -1,6 +1,6 @@
 Package: utilscidados
 Title: Internal Helper Functions for Data Work at Insper Cidades
-Version: 0.0.1
+Version: 0.0.2
 Authors@R:
     person("Vinicius", "Oike",
            email = "viniciusor@insper.edu.br",
