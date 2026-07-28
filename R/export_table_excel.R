@@ -157,7 +157,7 @@ export_tables_to_excel <- function(
     }
   )
 
-  invisible(file_name)
+  return(invisible(file_name))
 }
 
 # Internal: derive Excel-safe, unique sheet names from a list ----
@@ -203,5 +203,5 @@ resolve_sheet_names <- function(tables) {
     )
   }
 
-  sheet_names
+  return(sheet_names)
 }

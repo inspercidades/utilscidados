@@ -1,3 +1,6 @@
+# macOS
+.DS_Store
+
 # History files
 .Rhistory
 .Rapp.history
@@ -48,3 +51,6 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .positai
+
+# Scratch notes / planning docs, not part of the package
+ideas/

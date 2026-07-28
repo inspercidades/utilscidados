@@ -139,5 +139,5 @@ export_table <- function(
   }
 
   summarise_exports(exported_files, out_dir)
-  invisible(exported_files)
+  return(invisible(exported_files))
 }

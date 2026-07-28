@@ -67,7 +67,7 @@ build_documentation <- function(dat, tbl_description = NULL) {
 
   doc <- dplyr::left_join(doc, tbl_description, by = "col_names")
   doc <- dplyr::left_join(doc, tbl_na_values, by = "col_names")
-  format_documentation(doc)
+  return(format_documentation(doc))
 }
 
 #' Create an Index of Dataset Files
@@ -105,7 +105,7 @@ create_documentation_index <- function(name_file, name_table) {
     `Nome da aba/tabela` = name_table,
     `Nome original do arquivo (csv/xlsx)` = name_file
   )
-  tbl_index_docs
+  return(tbl_index_docs)
 }
 
 # Internal helpers ----
@@ -124,6 +124,7 @@ get_unique_values <- function(dat) {
   col_names <- names(dat)
   is_text <- vapply(dat, \(x) is.character(x) || is.factor(x), logical(1))
   txt_cols <- col_names[is_text]
+  lgl_cols <- col_names[vapply(dat, is.logical, logical(1))]
   date_cols <- col_names[vapply(dat, \(x) inherits(x, "Date"), logical(1))]
   num_cols <- col_names[vapply(dat, is.numeric, logical(1))]
 
@@ -138,6 +139,14 @@ get_unique_values <- function(dat) {
     )
     result[txt_cols] <- txt_unique_values
   }
+  if (length(lgl_cols) > 0) {
+    lgl_unique_values <- vapply(
+      dat[lgl_cols],
+      \(x) glimpse_text_values(as.character(x)),
+      character(1)
+    )
+    result[lgl_cols] <- lgl_unique_values
+  }
   if (length(num_cols) > 0) {
     result[num_cols] <- "Cont\u00ednua"
   }
@@ -151,7 +160,7 @@ get_unique_values <- function(dat) {
   }
 
   out <- tibble::as_tibble(as.list(result))
-  out
+  return(out)
 }
 
 #' Build a short comma-separated preview of unique text values
@@ -172,9 +181,9 @@ glimpse_text_values <- function(x) {
   indmax <- max(which(tsl < 50))
   label_text <- paste(x10[seq_len(indmax)], collapse = ", ")
   if (max(tsl) < 50) {
-    stringr::str_c("Primeiros valores: ", label_text)
+    return(stringr::str_c("Primeiros valores: ", label_text))
   } else {
-    stringr::str_c("Primeiros valores: ", label_text, ", ...")
+    return(stringr::str_c("Primeiros valores: ", label_text, ", ..."))
   }
 }
 
@@ -195,9 +204,9 @@ format_coltype <- function(x) {
   )
   matched <- as.character(stats::na.omit(y[x]))
   if (length(matched) == 0) {
-    NA_character_
+    return(NA_character_)
   } else {
-    matched[1]
+    return(matched[1])
   }
 }
 
@@ -205,7 +214,7 @@ format_coltype <- function(x) {
 #' @keywords internal
 #' @noRd
 get_missing_values <- function(dat) {
-  dat |>
+  return(dat |>
     dplyr::summarise(dplyr::across(
       dplyr::everything(),
       list(
@@ -224,7 +233,7 @@ get_missing_values <- function(dat) {
     tidyr::pivot_wider(names_from = "metric", values_from = "value") |>
     dplyr::select(
       dplyr::all_of(c("col_names", "missing_percent", "non_na_percent"))
-    )
+    ))
 }
 
 #' Rename the technical documentation columns to user-facing labels
@@ -248,7 +257,7 @@ format_documentation <- function(dat) {
       TRUE ~ paste0(description, ".")
     )
   )
-  dplyr::rename(dat, dplyr::any_of(rename_cols))
+  return(dplyr::rename(dat, dplyr::any_of(rename_cols)))
 }
 
 # Quiet R CMD check about NSE column references
