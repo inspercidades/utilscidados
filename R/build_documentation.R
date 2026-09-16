@@ -237,26 +237,28 @@ format_coltype <- function(x) {
 #' @keywords internal
 #' @noRd
 get_missing_values <- function(dat) {
-  return(dat |>
-    dplyr::summarise(dplyr::across(
-      dplyr::everything(),
-      list(
-        total_obs = ~ length(.x),
-        missing_count = ~ sum(is.na(.x)),
-        missing_percent = ~ round(100 * sum(is.na(.x)) / length(.x), 2),
-        non_na_percent = ~ round(100 * sum(!is.na(.x)) / length(.x), 2)
+  return(
+    dat |>
+      dplyr::summarise(dplyr::across(
+        dplyr::everything(),
+        list(
+          total_obs = ~ length(.x),
+          missing_count = ~ sum(is.na(.x)),
+          missing_percent = ~ round(100 * sum(is.na(.x)) / length(.x), 2),
+          non_na_percent = ~ round(100 * sum(!is.na(.x)) / length(.x), 2)
+        )
+      )) |>
+      tidyr::pivot_longer(
+        cols = dplyr::everything(),
+        names_to = c("col_names", "metric"),
+        names_sep = "_(?=total_obs|missing_count|missing_percent|non_na_percent)",
+        values_to = "value"
+      ) |>
+      tidyr::pivot_wider(names_from = "metric", values_from = "value") |>
+      dplyr::select(
+        dplyr::all_of(c("col_names", "missing_percent", "non_na_percent"))
       )
-    )) |>
-    tidyr::pivot_longer(
-      cols = dplyr::everything(),
-      names_to = c("col_names", "metric"),
-      names_sep = "_(?=total_obs|missing_count|missing_percent|non_na_percent)",
-      values_to = "value"
-    ) |>
-    tidyr::pivot_wider(names_from = "metric", values_from = "value") |>
-    dplyr::select(
-      dplyr::all_of(c("col_names", "missing_percent", "non_na_percent"))
-    ))
+  )
 }
 
 #' Rename the technical documentation columns to user-facing labels

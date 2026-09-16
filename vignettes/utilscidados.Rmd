@@ -55,7 +55,7 @@ export_table(iris, "iris", out_dir = out, extension = "parquet")
 export_table(
   iris,
   "iris",
-  out_dir   = out,
+  out_dir = out,
   extension = c("csv", "parquet", "rds"),
   overwrite = TRUE
 )
@@ -101,10 +101,10 @@ wait until Mapbox finishes processing the upload.
 # default.
 mapbox_upload(
   nc,
-  username   = "insper_cidados",
+  username = "insper_cidados",
   tileset_id = "nc_counties",
-  simplify   = 0.1,        # rmapshaper::ms_simplify(keep = 0.1)
-  wait       = TRUE
+  simplify = 0.1, # rmapshaper::ms_simplify(keep = 0.1)
+  wait = TRUE
 )
 ```
 
@@ -129,12 +129,12 @@ reach for `export_tables_to_excel()`:
 
 ```{r}
 tables <- list(
-  iris   = iris,
+  iris = iris,
   mtcars = mtcars
 )
 
 export_tables_to_excel(
-  tables    = tables,
+  tables = tables,
   file_name = file.path(out, "example.xlsx")
 )
 ```
@@ -152,7 +152,7 @@ descriptions you provide:
 
 ```{r}
 descs <- tibble::tibble(
-  col_names   = c("Sepal.Length", "Species"),
+  col_names = c("Sepal.Length", "Species"),
   description = c("Sepal length in cm", "Iris species")
 )
 
@@ -172,7 +172,7 @@ When you ship more than one table, build a small index too:
 
 ```{r}
 create_documentation_index(
-  name_file  = c("dados_2023.csv", "dados_2024.csv"),
+  name_file = c("dados_2023.csv", "dados_2024.csv"),
   name_table = c("dados_2023", "dados_2024")
 )
 ```
@@ -186,10 +186,12 @@ names(docs) <- c("iris", "mtcars")
 
 # Combine with the file/table index as the first sheet
 docs <- c(
-  list(`indice` = create_documentation_index(
-    name_file  = c("iris.csv", "mtcars.csv"),
-    name_table = c("iris", "mtcars")
-  )),
+  list(
+    `indice` = create_documentation_index(
+      name_file = c("iris.csv", "mtcars.csv"),
+      name_table = c("iris", "mtcars")
+    )
+  ),
   docs
 )
 

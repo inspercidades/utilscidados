@@ -7,28 +7,28 @@
 #' @keywords internal
 #' @noRd
 field_map <- list(
-  "title"               = "T\u00edtulo",
-  "subtitle"            = "Subt\u00edtulo",
-  "alternative_title"   = "T\u00edtulo Alternativo",
-  "alternative_url"     = "URL alternativo",
-  "doi"                 = "DOI",
-  "author"              = "Autor",
-  "contact"             = "Contato Autor/Respons\u00e1vel",
-  "publisher"           = "Publicador",
-  "description"         = "Descri\u00e7\u00e3o",
-  "subject"             = "Assunto",
-  "language"            = "Idioma",
-  "producer"            = "Produtor - se se aplica",
-  "contributor"         = "Contribui\u00e7\u00e3o - se se aplica",
-  "distributor"         = "Distribuidor - se se aplica",
-  "date_start"          = "Data inicio",
-  "date_end"            = "Data fim",
-  "type"                = "Tipo de dado/informa\u00e7\u00e3o",
-  "related_material"    = "Materiais relacionados",
-  "source"              = "Fonte",
+  "title" = "T\u00edtulo",
+  "subtitle" = "Subt\u00edtulo",
+  "alternative_title" = "T\u00edtulo Alternativo",
+  "alternative_url" = "URL alternativo",
+  "doi" = "DOI",
+  "author" = "Autor",
+  "contact" = "Contato Autor/Respons\u00e1vel",
+  "publisher" = "Publicador",
+  "description" = "Descri\u00e7\u00e3o",
+  "subject" = "Assunto",
+  "language" = "Idioma",
+  "producer" = "Produtor - se se aplica",
+  "contributor" = "Contribui\u00e7\u00e3o - se se aplica",
+  "distributor" = "Distribuidor - se se aplica",
+  "date_start" = "Data inicio",
+  "date_end" = "Data fim",
+  "type" = "Tipo de dado/informa\u00e7\u00e3o",
+  "related_material" = "Materiais relacionados",
+  "source" = "Fonte",
   "geographic_coverage" = "Cobertura geogr\u00e1fica",
-  "typology"            = "Tipologia - se se aplica",
-  "temporal_coverage"   = "Cobertura temporal"
+  "typology" = "Tipologia - se se aplica",
+  "temporal_coverage" = "Cobertura temporal"
 )
 
 #' Update metadata values in an existing metadata sheet
@@ -75,7 +75,9 @@ update_metadata <- function(file_path, sheet_name, updates) {
     row_idx <- which(df[, 2] == field_name)
 
     if (length(row_idx) == 0) {
-      cli::cli_warn("Field {.val {field_name}} not found in sheet {.val {sheet_name}}.")
+      cli::cli_warn(
+        "Field {.val {field_name}} not found in sheet {.val {sheet_name}}."
+      )
       next
     }
 
@@ -188,16 +190,27 @@ create_metadata_sheet <- function(
     cli::cli_abort("Sheet {.val {new_sheet_name}} already exists.")
   }
 
-  template_data <- openxlsx::readWorkbook(wb, sheet = template_sheet, colNames = FALSE)
+  template_data <- openxlsx::readWorkbook(
+    wb,
+    sheet = template_sheet,
+    colNames = FALSE
+  )
   openxlsx::addWorksheet(wb, sheetName = new_sheet_name)
-  openxlsx::writeData(wb, sheet = new_sheet_name, x = template_data, colNames = FALSE)
+  openxlsx::writeData(
+    wb,
+    sheet = new_sheet_name,
+    x = template_data,
+    colNames = FALSE
+  )
   openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
 
   if (!is.null(initial_values)) {
     update_metadata(file_path, new_sheet_name, initial_values)
   }
 
-  cli::cli_inform("Created sheet {.val {new_sheet_name}} in {.file {file_path}}.")
+  cli::cli_inform(
+    "Created sheet {.val {new_sheet_name}} in {.file {file_path}}."
+  )
   return(invisible(TRUE))
 }
 
@@ -239,24 +252,41 @@ validate_metadata <- function(file_path, sheet_name, strict = FALSE) {
   for (f in required_fields) {
     val <- meta[[f]]
     if (is.null(val) || all(is.na(val)) || all(grepl("^\\s*$", val))) {
-      signal("Required field {.field {field_map[[f]]}} is empty in sheet {.val {sheet_name}}.")
+      signal(
+        "Required field {.field {field_map[[f]]}} is empty in sheet {.val {sheet_name}}."
+      )
       ok <- FALSE
     }
   }
 
   keywords <- meta[["subject"]]
-  if (is.null(keywords) || all(is.na(keywords)) || sum(!is.na(keywords) & nzchar(keywords)) < 3) {
-    signal("Field {.field Assunto} must have at least 3 keywords in sheet {.val {sheet_name}}.")
+  if (
+    is.null(keywords) ||
+      all(is.na(keywords)) ||
+      sum(!is.na(keywords) & nzchar(keywords)) < 3
+  ) {
+    signal(
+      "Field {.field Assunto} must have at least 3 keywords in sheet {.val {sheet_name}}."
+    )
     ok <- FALSE
   }
 
   for (nm in all_keys) {
     vals <- meta[[nm]]
-    if (all(is.na(vals))) next
+    if (all(is.na(vals))) {
+      next
+    }
     for (v in vals) {
-      if (is.na(v)) next
-      if (grepl("\\[CONFIRMAR", v, ignore.case = TRUE) || grepl("TODO", v, ignore.case = TRUE)) {
-        cli::cli_warn("Field {.field {field_map[[nm]]}} contains a placeholder marker: {.val {v}}.")
+      if (is.na(v)) {
+        next
+      }
+      if (
+        grepl("\\[CONFIRMAR", v, ignore.case = TRUE) ||
+          grepl("TODO", v, ignore.case = TRUE)
+      ) {
+        cli::cli_warn(
+          "Field {.field {field_map[[nm]]}} contains a placeholder marker: {.val {v}}."
+        )
         ok <- FALSE
       }
     }
@@ -297,20 +327,40 @@ format_sheet <- function(
     df <- openxlsx::readWorkbook(wb, sheet = sheet_name, colNames = FALSE)
     for (col in seq_len(ncol(df))) {
       max_width <- max(nchar(as.character(df[, col])), na.rm = TRUE)
-      openxlsx::setColWidths(wb, sheet = sheet_name, cols = col, widths = min(max_width + 2, 100))
+      openxlsx::setColWidths(
+        wb,
+        sheet = sheet_name,
+        cols = col,
+        widths = min(max_width + 2, 100)
+      )
     }
   } else if (is.numeric(col_widths)) {
     df <- openxlsx::readWorkbook(wb, sheet = sheet_name, colNames = FALSE)
     ncols <- ncol(df)
     if (length(col_widths) == 1) {
-      openxlsx::setColWidths(wb, sheet = sheet_name, cols = seq_len(ncols), widths = col_widths)
+      openxlsx::setColWidths(
+        wb,
+        sheet = sheet_name,
+        cols = seq_len(ncols),
+        widths = col_widths
+      )
     } else {
-      openxlsx::setColWidths(wb, sheet = sheet_name, cols = seq_along(col_widths), widths = col_widths)
+      openxlsx::setColWidths(
+        wb,
+        sheet = sheet_name,
+        cols = seq_along(col_widths),
+        widths = col_widths
+      )
     }
   }
 
   if (!is.null(freeze_panes)) {
-    openxlsx::freezePane(wb, sheet = sheet_name, firstRow = freeze_panes[1], firstCol = freeze_panes[2])
+    openxlsx::freezePane(
+      wb,
+      sheet = sheet_name,
+      firstRow = freeze_panes[1],
+      firstCol = freeze_panes[2]
+    )
   }
 
   openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
@@ -355,70 +405,123 @@ copy_sheet_formatting <- function(
 ) {
   wb <- openxlsx::loadWorkbook(file_path)
 
-  if (!source_sheet %in% names(wb)) cli::cli_abort("Source sheet {.val {source_sheet}} not found.")
-  if (!target_sheet %in% names(wb)) cli::cli_abort("Target sheet {.val {target_sheet}} not found.")
+  if (!source_sheet %in% names(wb)) {
+    cli::cli_abort("Source sheet {.val {source_sheet}} not found.")
+  }
+  if (!target_sheet %in% names(wb)) {
+    cli::cli_abort("Target sheet {.val {target_sheet}} not found.")
+  }
 
   source_idx <- which(names(wb) == source_sheet)
   target_idx <- which(names(wb) == target_sheet)
-  source_data <- openxlsx::readWorkbook(wb, sheet = source_sheet, colNames = FALSE)
-  target_data <- openxlsx::readWorkbook(wb, sheet = target_sheet, colNames = FALSE)
+  source_data <- openxlsx::readWorkbook(
+    wb,
+    sheet = source_sheet,
+    colNames = FALSE
+  )
+  target_data <- openxlsx::readWorkbook(
+    wb,
+    sheet = target_sheet,
+    colNames = FALSE
+  )
 
   if (copy_col_widths) {
-    tryCatch({
-      if (!is.null(wb$colWidths[[source_idx]])) {
-        for (col_info in wb$colWidths[[source_idx]]) {
-          if (!is.null(col_info$width)) {
-            openxlsx::setColWidths(wb, sheet = target_sheet, cols = col_info$cols, widths = col_info$width)
+    tryCatch(
+      {
+        if (!is.null(wb$colWidths[[source_idx]])) {
+          for (col_info in wb$colWidths[[source_idx]]) {
+            if (!is.null(col_info$width)) {
+              openxlsx::setColWidths(
+                wb,
+                sheet = target_sheet,
+                cols = col_info$cols,
+                widths = col_info$width
+              )
+            }
           }
         }
-      }
-    }, error = function(e) NULL)
+      },
+      error = function(e) NULL
+    )
   }
 
   if (copy_row_heights) {
-    tryCatch({
-      if (!is.null(wb$rowHeights[[source_idx]])) {
-        for (row_info in wb$rowHeights[[source_idx]]) {
-          if (!is.null(row_info$height)) {
-            openxlsx::setRowHeights(wb, sheet = target_sheet, rows = row_info$rows, heights = row_info$height)
+    tryCatch(
+      {
+        if (!is.null(wb$rowHeights[[source_idx]])) {
+          for (row_info in wb$rowHeights[[source_idx]]) {
+            if (!is.null(row_info$height)) {
+              openxlsx::setRowHeights(
+                wb,
+                sheet = target_sheet,
+                rows = row_info$rows,
+                heights = row_info$height
+              )
+            }
           }
         }
-      }
-    }, error = function(e) NULL)
+      },
+      error = function(e) NULL
+    )
   }
 
   if (copy_zoom) {
-    tryCatch({
-      wb$worksheets[[target_idx]]$sheetViews <- wb$worksheets[[source_idx]]$sheetViews
-    }, error = function(e) NULL)
+    tryCatch(
+      {
+        wb$worksheets[[target_idx]]$sheetViews <- wb$worksheets[[
+          source_idx
+        ]]$sheetViews
+      },
+      error = function(e) NULL
+    )
   }
 
   if (copy_freeze_panes) {
-    tryCatch({
-      wb$worksheets[[target_idx]]$freezePane <- wb$worksheets[[source_idx]]$freezePane
-    }, error = function(e) NULL)
+    tryCatch(
+      {
+        wb$worksheets[[target_idx]]$freezePane <- wb$worksheets[[
+          source_idx
+        ]]$freezePane
+      },
+      error = function(e) NULL
+    )
   }
 
   if (copy_cell_styles) {
-    tryCatch({
-      n_rows <- min(nrow(source_data), nrow(target_data))
-      n_cols <- min(ncol(source_data), ncol(target_data))
-      for (row in seq_len(n_rows)) {
-        for (col in seq_len(n_cols)) {
-          style_obj <- tryCatch(
-            wb$styleObjects[[wb$worksheets[[source_idx]]$sheet_data[[row]][[col]]$style]],
-            error = function(e) NULL
-          )
-          if (!is.null(style_obj)) {
-            openxlsx::addStyle(wb, sheet = target_sheet, style = style_obj, rows = row, cols = col, gridExpand = FALSE, stack = FALSE)
+    tryCatch(
+      {
+        n_rows <- min(nrow(source_data), nrow(target_data))
+        n_cols <- min(ncol(source_data), ncol(target_data))
+        for (row in seq_len(n_rows)) {
+          for (col in seq_len(n_cols)) {
+            style_obj <- tryCatch(
+              wb$styleObjects[[
+                wb$worksheets[[source_idx]]$sheet_data[[row]][[col]]$style
+              ]],
+              error = function(e) NULL
+            )
+            if (!is.null(style_obj)) {
+              openxlsx::addStyle(
+                wb,
+                sheet = target_sheet,
+                style = style_obj,
+                rows = row,
+                cols = col,
+                gridExpand = FALSE,
+                stack = FALSE
+              )
+            }
           }
         }
-      }
-    }, error = function(e) NULL)
+      },
+      error = function(e) NULL
+    )
   }
 
   openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
-  cli::cli_inform("Copied formatting from {.val {source_sheet}} to {.val {target_sheet}}.")
+  cli::cli_inform(
+    "Copied formatting from {.val {source_sheet}} to {.val {target_sheet}}."
+  )
   return(invisible(TRUE))
 }
 
@@ -433,6 +536,8 @@ copy_formatting_to_multiple <- function(
   for (target in target_sheets) {
     copy_sheet_formatting(file_path, source_sheet, target, ...)
   }
-  cli::cli_inform("Formatted {.val {length(target_sheets)}} sheet{?s} based on {.val {source_sheet}}.")
+  cli::cli_inform(
+    "Formatted {.val {length(target_sheets)}} sheet{?s} based on {.val {source_sheet}}."
+  )
   return(invisible(TRUE))
 }

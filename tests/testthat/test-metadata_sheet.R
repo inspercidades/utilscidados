@@ -2,7 +2,9 @@ test_that("read_metadata returns all fields when fields=NULL", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", ""),
       V2 = c("T\u00edtulo", "Autor"),
@@ -23,7 +25,9 @@ test_that("read_metadata filters by fields when specified", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", ""),
       V2 = c("T\u00edtulo", "Autor"),
@@ -44,7 +48,9 @@ test_that("read_metadata returns NA for missing fields", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = "",
       V2 = "T\u00edtulo",
@@ -64,7 +70,9 @@ test_that("read_metadata warns (not errors) on unknown field key", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = "",
       V2 = "T\u00edtulo",
@@ -86,7 +94,9 @@ test_that("update_metadata warns (not errors) on unknown field key", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = "",
       V2 = "T\u00edtulo",
@@ -104,7 +114,9 @@ test_that("update_metadata modifies values in-place", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", ""),
       V2 = c("T\u00edtulo", "Autor"),
@@ -125,7 +137,9 @@ test_that("update_metadata updates multiple subjects (keywords)", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", "", "", ""),
       V2 = c("T\u00edtulo", "Assunto", "Assunto", "Assunto"),
@@ -136,7 +150,11 @@ test_that("update_metadata updates multiple subjects (keywords)", {
   )
   openxlsx::saveWorkbook(wb, tmp, overwrite = TRUE)
 
-  update_metadata(tmp, "Metadados", list(subject = c("Mobilidade", "GPS", "Transporte")))
+  update_metadata(
+    tmp,
+    "Metadados",
+    list(subject = c("Mobilidade", "GPS", "Transporte"))
+  )
 
   result <- read_metadata(tmp, "Metadados", fields = "subject")
   expect_equal(result$subject, c("Mobilidade", "GPS", "Transporte"))
@@ -146,7 +164,9 @@ test_that("create_metadata_sheet creates new sheet from template", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "1-bilhetagem")
-  openxlsx::writeData(wb, "1-bilhetagem",
+  openxlsx::writeData(
+    wb,
+    "1-bilhetagem",
     x = data.frame(
       V1 = "",
       V2 = "T\u00edtulo",
@@ -166,8 +186,15 @@ test_that("create_metadata_sheet aborts if sheet already exists", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
-    x = data.frame(V1 = "", V2 = "T\u00edtulo", V3 = "", stringsAsFactors = FALSE),
+  openxlsx::writeData(
+    wb,
+    "Metadados",
+    x = data.frame(
+      V1 = "",
+      V2 = "T\u00edtulo",
+      V3 = "",
+      stringsAsFactors = FALSE
+    ),
     colNames = FALSE
   )
   openxlsx::saveWorkbook(wb, tmp, overwrite = TRUE)
@@ -179,7 +206,9 @@ test_that("create_metadata_sheet accepts initial_values", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "1-bilhetagem")
-  openxlsx::writeData(wb, "1-bilhetagem",
+  openxlsx::writeData(
+    wb,
+    "1-bilhetagem",
     x = data.frame(
       V1 = "",
       V2 = "T\u00edtulo",
@@ -199,13 +228,27 @@ test_that("validate_metadata passes on complete sheet", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", "", "", "", "", ""),
-      V2 = c("Autor", "Produtor - se se aplica", "Contato Autor/Respons\u00e1vel",
-             "Assunto", "Assunto", "Assunto"),
-      V3 = c("Author Name", "Producer Name", "contact@email.com",
-             "Mobilidade", "Transporte", "GPS"),
+      V2 = c(
+        "Autor",
+        "Produtor - se se aplica",
+        "Contato Autor/Respons\u00e1vel",
+        "Assunto",
+        "Assunto",
+        "Assunto"
+      ),
+      V3 = c(
+        "Author Name",
+        "Producer Name",
+        "contact@email.com",
+        "Mobilidade",
+        "Transporte",
+        "GPS"
+      ),
       stringsAsFactors = FALSE
     ),
     colNames = FALSE
@@ -218,10 +261,16 @@ test_that("validate_metadata warns on missing required fields", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", "", ""),
-      V2 = c("Autor", "Produtor - se se aplica", "Contato Autor/Respons\u00e1vel"),
+      V2 = c(
+        "Autor",
+        "Produtor - se se aplica",
+        "Contato Autor/Respons\u00e1vel"
+      ),
       V3 = c("", "", ""),
       stringsAsFactors = FALSE
     ),
@@ -235,13 +284,27 @@ test_that("validate_metadata warns on placeholders", {
   tmp <- withr::local_tempfile(fileext = ".xlsx")
   wb <- openxlsx::createWorkbook()
   openxlsx::addWorksheet(wb, "Metadados")
-  openxlsx::writeData(wb, "Metadados",
+  openxlsx::writeData(
+    wb,
+    "Metadados",
     x = data.frame(
       V1 = c("", "", "", "", "", ""),
-      V2 = c("Autor", "Produtor - se se aplica", "Contato Autor/Respons\u00e1vel",
-             "Assunto", "Assunto", "Assunto"),
-      V3 = c("Author", "Producer", "contact@email.com",
-             "Mobilidade", "Transporte", "[CONFIRMAR...]"),
+      V2 = c(
+        "Autor",
+        "Produtor - se se aplica",
+        "Contato Autor/Respons\u00e1vel",
+        "Assunto",
+        "Assunto",
+        "Assunto"
+      ),
+      V3 = c(
+        "Author",
+        "Producer",
+        "contact@email.com",
+        "Mobilidade",
+        "Transporte",
+        "[CONFIRMAR...]"
+      ),
       stringsAsFactors = FALSE
     ),
     colNames = FALSE

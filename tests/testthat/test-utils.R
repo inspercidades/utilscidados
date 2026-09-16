@@ -17,12 +17,18 @@ test_that("clean_file_name collapses multiple underscores", {
 
 test_that("check_extension aborts on bad values", {
   expect_error(utilscidados:::check_extension("bad", c("csv", "xlsx")))
-  expect_error(utilscidados:::check_extension(c("csv", "bad"), c("csv", "xlsx")))
+  expect_error(utilscidados:::check_extension(
+    c("csv", "bad"),
+    c("csv", "xlsx")
+  ))
 })
 
 test_that("check_extension passes on valid values", {
   expect_invisible(utilscidados:::check_extension("csv", c("csv", "xlsx")))
-  expect_true(utilscidados:::check_extension(c("csv", "xlsx"), c("csv", "xlsx")))
+  expect_true(utilscidados:::check_extension(
+    c("csv", "xlsx"),
+    c("csv", "xlsx")
+  ))
 })
 
 test_that("check_extension aborts on empty input", {
@@ -36,7 +42,10 @@ test_that("resolve_formats expands 'all' alias", {
     xlsx = list(dataverse = TRUE),
     rds = list(dataverse = FALSE)
   )
-  expect_equal(utilscidados:::resolve_formats("all", registry), c("csv", "xlsx", "rds"))
+  expect_equal(
+    utilscidados:::resolve_formats("all", registry),
+    c("csv", "xlsx", "rds")
+  )
 })
 
 test_that("resolve_formats expands 'dataverse' alias", {
@@ -45,7 +54,10 @@ test_that("resolve_formats expands 'dataverse' alias", {
     xlsx = list(dataverse = TRUE),
     rds = list(dataverse = FALSE)
   )
-  expect_equal(utilscidados:::resolve_formats("dataverse", registry), c("csv", "xlsx"))
+  expect_equal(
+    utilscidados:::resolve_formats("dataverse", registry),
+    c("csv", "xlsx")
+  )
 })
 
 test_that("resolve_formats handles 'all' combined with specific formats", {
@@ -54,5 +66,8 @@ test_that("resolve_formats handles 'all' combined with specific formats", {
     xlsx = list(dataverse = TRUE),
     rds = list(dataverse = FALSE)
   )
-  expect_equal(utilscidados:::resolve_formats(c("all", "xlsx"), registry), c("csv", "xlsx", "rds"))
+  expect_equal(
+    utilscidados:::resolve_formats(c("all", "xlsx"), registry),
+    c("csv", "xlsx", "rds")
+  )
 })
