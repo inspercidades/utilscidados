@@ -46,6 +46,14 @@ common output directory, using a sanitised base file name.
 \item Shapefile is written to a subdirectory named after the cleaned
 file name, since a shapefile is a set of sidecar files (\code{.shp},
 \code{.shx}, \code{.dbf}, ...).
+\item Shapefile column names longer than 10 bytes are shortened with
+\code{\link[=make_short_names]{make_short_names()}}; the other formats keep the original names.
+Use \code{build_documentation(short_names = TRUE)} to record both names
+in the data dictionary.
+\item After writing, the Shapefile's feature and field counts are checked
+against \code{shp}. A failed or incomplete Shapefile raises an error and
+its partial files are removed. Failures in the other formats only
+warn.
 \item GeoParquet is written via \code{\link[sfarrow:st_write_parquet]{sfarrow::st_write_parquet()}}.
 }
 }
@@ -64,5 +72,5 @@ export_shapefile(
 
 }
 \seealso{
-\code{\link[sf:st_write]{sf::st_write()}}, \code{\link[=export_table]{export_table()}}.
+\code{\link[sf:st_write]{sf::st_write()}}, \code{\link[=export_table]{export_table()}}, \code{\link[=make_short_names]{make_short_names()}}.
 }

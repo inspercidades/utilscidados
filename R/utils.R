@@ -120,7 +120,9 @@ resolve_formats <- function(extension, registry) {
 #' Write one format from a registry spec
 #'
 #' Builds the path (via `spec$path_fn` if present), runs `spec$pre`, then
-#' calls `spec$writer` under [write_with_check()] semantics.
+#' calls `spec$writer` under [write_with_check()] semantics. When the
+#' writer fails, `spec$cleanup` (if present) removes partial output, and
+#' `spec$strict = TRUE` turns the warning into an error.
 #'
 #' @return Character vector of paths actually written (length 0 on
 #'   skip or failure).
@@ -156,6 +158,15 @@ write_via_spec <- function(spec, dat, out_dir, clean_name, overwrite) {
       written
     },
     error = function(e) {
+      if (!is.null(spec$cleanup)) {
+        spec$cleanup(path)
+      }
+      if (isTRUE(spec$strict)) {
+        cli::cli_abort(
+          "Failed to export {spec$label}; partial files were removed.",
+          parent = e
+        )
+      }
       cli::cli_warn("Failed to export {spec$label}: {e$message}")
       character(0)
     }

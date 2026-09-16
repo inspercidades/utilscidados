@@ -1,5 +1,27 @@
 # export_shapefile ----
 
+SHAPEFILE_COMPONENT_EXTENSIONS <- c(
+  "shp",
+  "shx",
+  "dbf",
+  "prj",
+  "qpj",
+  "cpg",
+  "qix",
+  "sbn",
+  "sbx",
+  "fbn",
+  "fbx",
+  "ain",
+  "aih",
+  "atx",
+  "ixs",
+  "mxs",
+  "idm",
+  "ind",
+  "shp.xml"
+)
+
 #' Per-format specifications for `export_shapefile()`
 #' @keywords internal
 #' @noRd
@@ -24,6 +46,7 @@ SHP_FORMATS <- list(
   shp = list(
     label = "Shapefile",
     dataverse = TRUE,
+    strict = TRUE,
     path_fn = function(shp, out_dir, clean_name) {
       file.path(out_dir, clean_name, paste0(clean_name, ".shp"))
     },
@@ -32,15 +55,21 @@ SHP_FORMATS <- list(
       if (!dir.exists(shp_dir)) {
         dir.create(shp_dir, recursive = TRUE, showWarnings = FALSE)
       }
-      sf::st_write(shp, path, quiet = TRUE, delete_dsn = overwrite)
+
+      shp <- shorten_sf_names(shp)
+      sf::st_write(
+        shp,
+        path,
+        quiet = TRUE,
+        delete_dsn = overwrite && file.exists(path)
+      )
+      check_shapefile(path, n_rows = nrow(shp), n_fields = ncol(shp) - 1)
     },
     enumerate = function(path) {
-      clean_name <- tools::file_path_sans_ext(basename(path))
-      list.files(
-        dirname(path),
-        pattern = paste0("^", clean_name, "\\."),
-        full.names = TRUE
-      )
+      return(list_shapefile_parts(path))
+    },
+    cleanup = function(path) {
+      unlink(list_shapefile_parts(path))
     }
   ),
   geoparquet = list(
@@ -76,6 +105,14 @@ SHP_FORMATS <- list(
 #' * Shapefile is written to a subdirectory named after the cleaned
 #'   file name, since a shapefile is a set of sidecar files (`.shp`,
 #'   `.shx`, `.dbf`, ...).
+#' * Shapefile column names longer than 10 bytes are shortened with
+#'   [make_short_names()]; the other formats keep the original names.
+#'   Use `build_documentation(short_names = TRUE)` to record both names
+#'   in the data dictionary.
+#' * After writing, the Shapefile's feature and field counts are checked
+#'   against `shp`. A failed or incomplete Shapefile raises an error and
+#'   its partial files are removed. Failures in the other formats only
+#'   warn.
 #' * GeoParquet is written via [sfarrow::st_write_parquet()].
 #'
 #' @return Invisibly returns a character vector of paths to successfully
@@ -94,7 +131,7 @@ SHP_FORMATS <- list(
 #' )
 #' }
 #'
-#' @seealso [sf::st_write()], [export_table()].
+#' @seealso [sf::st_write()], [export_table()], [make_short_names()].
 #' @importFrom sfarrow st_write_parquet
 #' @export
 export_shapefile <- function(
@@ -107,8 +144,12 @@ export_shapefile <- function(
   if (!inherits(shp, "sf")) {
     cli::cli_abort("Argument {.arg shp} must be an {.cls sf} object.")
   }
-  if (missing(file_name) || !is.character(file_name) || length(file_name) != 1) {
-    cli::cli_abort("Argument {.arg file_name} must be a single character string.")
+  if (
+    missing(file_name) || !is.character(file_name) || length(file_name) != 1
+  ) {
+    cli::cli_abort(
+      "Argument {.arg file_name} must be a single character string."
+    )
   }
 
   if ("parquet" %in% extension) {
@@ -137,4 +178,74 @@ export_shapefile <- function(
 
   summarise_exports(exported_files, out_dir, epsg = sf::st_crs(shp)$epsg)
   return(invisible(exported_files))
+}
+
+# Internal helpers ----
+
+#' Shorten the attribute column names of an sf object
+#'
+#' Applies [make_short_names()] to every column except the geometry and
+#' tells the user how many names changed.
+#'
+#' @param shp An `sf` object.
+#' @return `shp` with shortened attribute names.
+#' @keywords internal
+#' @noRd
+shorten_sf_names <- function(shp) {
+  geom_col <- attr(shp, "sf_column")
+  attr_cols <- setdiff(names(shp), geom_col)
+  short <- make_short_names(attr_cols)
+  n_changed <- sum(short != attr_cols)
+
+  if (n_changed > 0) {
+    names(shp)[match(attr_cols, names(shp))] <- short
+    cli::cli_inform(c(
+      "i" = "Shortened {n_changed} column name{?s} to fit the Shapefile limit.",
+      " " = "Record them with {.code build_documentation(short_names = TRUE)}."
+    ))
+  }
+  return(shp)
+}
+
+#' Check that a written Shapefile holds every feature and field
+#'
+#' Reads only the layer header, so the check is cheap for large files.
+#'
+#' @param path Path to the `.shp` file.
+#' @param n_rows,n_fields Expected feature and attribute field counts.
+#' @return `TRUE`, invisibly; aborts on a mismatch.
+#' @keywords internal
+#' @noRd
+check_shapefile <- function(path, n_rows, n_fields) {
+  layer <- sf::st_layers(path)
+  n_features <- layer$features[1]
+  n_written_fields <- layer$fields[1]
+
+  if (!identical(as.numeric(n_features), as.numeric(n_rows))) {
+    cli::cli_abort(
+      "Shapefile has {n_features} features; expected {n_rows}."
+    )
+  }
+  if (!identical(as.numeric(n_written_fields), as.numeric(n_fields))) {
+    cli::cli_abort(
+      "Shapefile has {n_written_fields} fields; expected {n_fields}."
+    )
+  }
+  return(invisible(TRUE))
+}
+
+#' List the sidecar files that make up a Shapefile
+#'
+#' @param path Path to the `.shp` file.
+#' @keywords internal
+#' @noRd
+list_shapefile_parts <- function(path) {
+  clean_name <- tools::file_path_sans_ext(basename(path))
+  candidates <- list.files(dirname(path), full.names = TRUE)
+  candidate_names <- tolower(basename(candidates))
+  prefix <- paste0(tolower(clean_name), ".")
+  has_stem <- startsWith(candidate_names, prefix)
+  extensions <- substring(candidate_names, nchar(prefix) + 1)
+
+  return(candidates[has_stem & extensions %in% SHAPEFILE_COMPONENT_EXTENSIONS])
 }
