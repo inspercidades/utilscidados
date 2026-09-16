@@ -38,9 +38,13 @@ make_short_names <- function(x, max_length = 10) {
     !is.numeric(max_length) ||
       length(max_length) != 1 ||
       is.na(max_length) ||
+      !is.finite(max_length) ||
+      max_length != floor(max_length) ||
       max_length < 2
   ) {
-    cli::cli_abort("Argument {.arg max_length} must be a single number >= 2.")
+    cli::cli_abort(
+      "Argument {.arg max_length} must be a single finite whole number >= 2."
+    )
   }
 
   is_long <- nchar(x, type = "bytes") > max_length
@@ -60,8 +64,14 @@ make_short_names <- function(x, max_length = 10) {
     suffix <- 1
     while (tolower(candidate) %in% taken) {
       suffix_chr <- paste0("_", suffix)
+      suffix_bytes <- nchar(suffix_chr, type = "bytes")
+      if (suffix_bytes > max_length) {
+        cli::cli_abort(
+          "Cannot create {length(x)} unique names with a {max_length}-byte limit."
+        )
+      }
       candidate <- paste0(
-        truncate_bytes(short[i], max_length - nchar(suffix_chr)),
+        truncate_bytes(short[i], max_length - suffix_bytes),
         suffix_chr
       )
       suffix <- suffix + 1
@@ -81,10 +91,23 @@ make_short_names <- function(x, max_length = 10) {
 #' characters are never split.
 #'
 #' @param x A character vector.
-#' @param max_bytes A single positive integer.
+#' @param max_bytes A single non-negative integer.
 #' @keywords internal
 #' @noRd
 truncate_bytes <- function(x, max_bytes) {
+  if (
+    !is.numeric(max_bytes) ||
+      length(max_bytes) != 1 ||
+      is.na(max_bytes) ||
+      !is.finite(max_bytes) ||
+      max_bytes != floor(max_bytes) ||
+      max_bytes < 0
+  ) {
+    cli::cli_abort(
+      "Argument {.arg max_bytes} must be a single non-negative whole number."
+    )
+  }
+
   truncated <- vapply(
     x,
     \(s) {

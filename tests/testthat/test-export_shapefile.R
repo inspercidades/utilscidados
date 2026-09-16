@@ -40,6 +40,20 @@ test_that("make_short_names() resolves truncation collisions with a suffix", {
   expect_true(all(nchar(short, type = "bytes") <= 10))
 })
 
+test_that("make_short_names() uses all available suffixes within the limit", {
+  short <- make_short_names(rep("a", 10), max_length = 2)
+
+  expect_length(unique(tolower(short)), 10)
+  expect_lte(max(nchar(short, type = "bytes")), 2)
+})
+
+test_that("make_short_names() errors when the namespace is exhausted", {
+  expect_snapshot(
+    make_short_names(rep("a", 11), max_length = 2),
+    error = TRUE
+  )
+})
+
 test_that("make_short_names() never renames a name that already fits", {
   x <- c("area_terreno_total", "ar_trrn_tt")
   short <- make_short_names(x)
@@ -62,6 +76,8 @@ test_that("make_short_names() is deterministic", {
 test_that("make_short_names() validates its arguments", {
   expect_error(make_short_names(1:3), class = "rlang_error")
   expect_error(make_short_names("abc", max_length = 0), class = "rlang_error")
+  expect_error(make_short_names("abc", max_length = 2.5), class = "rlang_error")
+  expect_error(make_short_names("abc", max_length = Inf), class = "rlang_error")
   expect_error(make_short_names(c("a", NA)), class = "rlang_error")
 })
 
@@ -103,8 +119,12 @@ test_that("shapefile export does not rename columns in other formats", {
   ))
 })
 
-test_that("a failed shapefile write errors and leaves no partial files", {
+test_that("a failed shapefile write removes only shapefile components", {
   out_dir <- withr::local_tempdir()
+  shp_dir <- file.path(out_dir, "pontos")
+  dir.create(shp_dir)
+  unrelated <- file.path(shp_dir, c("pontos.csv", "pontos.md"))
+  file.create(unrelated)
   local_mocked_bindings(
     st_write = function(obj, dsn, ...) {
       stem <- tools::file_path_sans_ext(dsn)
@@ -125,7 +145,7 @@ test_that("a failed shapefile write errors and leaves no partial files", {
     ),
     "Shapefile"
   )
-  expect_length(list.files(file.path(out_dir, "pontos")), 0)
+  expect_setequal(list.files(shp_dir), basename(unrelated))
 })
 
 test_that("check_shapefile() flags a shapefile with missing rows", {

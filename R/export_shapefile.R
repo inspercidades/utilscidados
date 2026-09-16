@@ -1,5 +1,27 @@
 # export_shapefile ----
 
+SHAPEFILE_COMPONENT_EXTENSIONS <- c(
+  "shp",
+  "shx",
+  "dbf",
+  "prj",
+  "qpj",
+  "cpg",
+  "qix",
+  "sbn",
+  "sbx",
+  "fbn",
+  "fbx",
+  "ain",
+  "aih",
+  "atx",
+  "ixs",
+  "mxs",
+  "idm",
+  "ind",
+  "shp.xml"
+)
+
 #' Per-format specifications for `export_shapefile()`
 #' @keywords internal
 #' @noRd
@@ -122,8 +144,12 @@ export_shapefile <- function(
   if (!inherits(shp, "sf")) {
     cli::cli_abort("Argument {.arg shp} must be an {.cls sf} object.")
   }
-  if (missing(file_name) || !is.character(file_name) || length(file_name) != 1) {
-    cli::cli_abort("Argument {.arg file_name} must be a single character string.")
+  if (
+    missing(file_name) || !is.character(file_name) || length(file_name) != 1
+  ) {
+    cli::cli_abort(
+      "Argument {.arg file_name} must be a single character string."
+    )
   }
 
   if ("parquet" %in% extension) {
@@ -215,10 +241,11 @@ check_shapefile <- function(path, n_rows, n_fields) {
 #' @noRd
 list_shapefile_parts <- function(path) {
   clean_name <- tools::file_path_sans_ext(basename(path))
-  parts <- list.files(
-    dirname(path),
-    pattern = paste0("^", clean_name, "\\."),
-    full.names = TRUE
-  )
-  return(parts)
+  candidates <- list.files(dirname(path), full.names = TRUE)
+  candidate_names <- tolower(basename(candidates))
+  prefix <- paste0(tolower(clean_name), ".")
+  has_stem <- startsWith(candidate_names, prefix)
+  extensions <- substring(candidate_names, nchar(prefix) + 1)
+
+  return(candidates[has_stem & extensions %in% SHAPEFILE_COMPONENT_EXTENSIONS])
 }
