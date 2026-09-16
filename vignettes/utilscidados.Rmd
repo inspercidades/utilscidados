@@ -21,13 +21,13 @@ library(utilscidados)
 
 ## What this package is for
 
-`utilscidados` collects the small helpers we reach for at Insper
-Cidades when preparing data for two specific destinations:
+`utilscidados` collects the small helpers we use at Insper Cidades
+when preparing data for two destinations:
 
-1.  **Insper's Dataverse.** Datasets published there must be shipped
-    in several file formats with predictable naming and accompanied
+1.  **Insper's Dataverse.** Datasets published there must ship in
+    several file formats with predictable naming and be accompanied
     by column-level documentation. `export_table()` /
-    `export_shapefile()` produce the full Dataverse-compliant set in
+    `export_shapefile()` produce the Dataverse-compliant set in
     one call (`extension = "dataverse"`), while
     `build_documentation()` and `create_documentation_index()` build
     the documentation tables.
@@ -35,14 +35,10 @@ Cidades when preparing data for two specific destinations:
 2.  **Mapbox Studio (GeoPortal).** Spatial layers are uploaded as
     GeoJSON or GeoPackage in WGS84. `export_shapefile()` reprojects
     the input, sanitises the file name, and writes both formats so
-    the layer is ready to upload without per-dataset wrangling.
+    the layer is ready to upload without manual preparation.
 
-All exporters share consistent defaults, overwrite protection, and
-`cli`-styled progress messages.
-
-The chunks below are not evaluated when the vignette is built (they
-would litter `tempdir()` with files); copy them into a session if you
-want to try them.
+The chunks below are not evaluated when the vignette is built; copy
+them into a session if you want to try them.
 
 ## Exporting a tabular dataset
 
@@ -75,8 +71,8 @@ limit still attempts to write, but emits a warning.
 
 ## Exporting a spatial dataset
 
-`export_shapefile()` is the spatial counterpart. The argument shape
-matches `export_table()`:
+`export_shapefile()` is the spatial counterpart. It takes the same
+arguments as `export_table()`:
 
 ```{r}
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
@@ -96,8 +92,8 @@ Notes:
 
 For layers that need to be served from GeoPortal, `mapbox_upload()`
 sends the data straight to Mapbox as a tileset. It accepts either an
-`sf` object or a path, can simplify the geometry on the way, and
-optionally blocks until Mapbox finishes processing.
+`sf` object or a path, can simplify the geometry on the way, and can
+wait until Mapbox finishes processing the upload.
 
 ```{r}
 # Requires the suggested `mapboxapi` package (and `rmapshaper` if
@@ -112,7 +108,7 @@ mapbox_upload(
 )
 ```
 
-## File name sanitization
+## File name sanitisation
 
 `export_table()`, `export_shapefile()`, and `mapbox_upload()` all
 lower-case the supplied name and replace runs of non-alphanumerics
@@ -181,7 +177,8 @@ create_documentation_index(
 )
 ```
 
-A typical publication workflow then becomes:
+In a typical publication workflow, you build the per-table docs and
+combine them with the index into one workbook:
 
 ```{r}
 docs <- lapply(list(iris, mtcars), build_documentation)
