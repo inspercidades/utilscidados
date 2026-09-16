@@ -86,3 +86,21 @@ test_that("get_unique_values handles mixed logical column", {
   out <- utilscidados:::get_unique_values(dat)
   expect_equal(out$flag, "Primeiros valores: TRUE, FALSE")
 })
+
+test_that("build_documentation() adds shapefile names when asked", {
+  dat <- data.frame(
+    id = 1:2,
+    n_unidades_his_por_bloco = c(1, 2),
+    n_unidades_hmp_por_bloco = c(3, 4)
+  )
+
+  doc <- build_documentation(dat, short_names = TRUE)
+
+  expect_equal(names(doc)[1:2], c("Nome da Coluna", "Nome no Shapefile"))
+  expect_equal(doc[["Nome no Shapefile"]], make_short_names(names(dat)))
+})
+
+test_that("build_documentation() omits shapefile names by default", {
+  doc <- build_documentation(data.frame(id = 1:2))
+  expect_false("Nome no Shapefile" %in% names(doc))
+})

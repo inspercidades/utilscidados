@@ -4,7 +4,7 @@
 \alias{build_documentation}
 \title{Build Column-level Documentation for a Dataset}
 \usage{
-build_documentation(dat, tbl_description = NULL)
+build_documentation(dat, tbl_description = NULL, short_names = FALSE)
 }
 \arguments{
 \item{dat}{A \code{data.frame}, \code{tibble}, or \code{sf} object. If \code{sf}, geometry
@@ -14,11 +14,18 @@ is dropped before profiling.}
 \code{col_names} (character) and \code{description} (character) giving manual
 descriptions for each column. Columns not listed receive an \code{NA}
 description.}
+
+\item{short_names}{Logical. If \code{TRUE}, adds a \verb{Nome no Shapefile}
+column with the name each column gets in a Shapefile written by
+\code{\link[=export_shapefile]{export_shapefile()}}, as returned by \code{\link[=make_short_names]{make_short_names()}}. Defaults
+to \code{FALSE}.}
 }
 \value{
 A tibble with columns:
 \itemize{
 \item \verb{Nome da Coluna} - column name
+\item \verb{Nome no Shapefile} - column name in the Shapefile, only when
+\code{short_names = TRUE}
 \item \verb{Tipo da Coluna} - Portuguese label of the column type
 \item \code{Valores} - sample values (categorical), range (date), or
 \code{"Cont\\u00ednua"} (numeric)

@@ -13,9 +13,15 @@
 #'   `col_names` (character) and `description` (character) giving manual
 #'   descriptions for each column. Columns not listed receive an `NA`
 #'   description.
+#' @param short_names Logical. If `TRUE`, adds a `Nome no Shapefile`
+#'   column with the name each column gets in a Shapefile written by
+#'   [export_shapefile()], as returned by [make_short_names()]. Defaults
+#'   to `FALSE`.
 #'
 #' @return A tibble with columns:
 #'   * `Nome da Coluna` - column name
+#'   * `Nome no Shapefile` - column name in the Shapefile, only when
+#'     `short_names = TRUE`
 #'   * `Tipo da Coluna` - Portuguese label of the column type
 #'   * `Valores` - sample values (categorical), range (date), or
 #'     `"Cont\u00ednua"` (numeric)
@@ -32,13 +38,22 @@
 #' build_documentation(iris, tbl_description = descs)
 #' }
 #' @export
-build_documentation <- function(dat, tbl_description = NULL) {
+build_documentation <- function(
+  dat,
+  tbl_description = NULL,
+  short_names = FALSE
+) {
   if (inherits(dat, "sf")) {
     dat <- sf::st_drop_geometry(dat)
   }
   if (!is.data.frame(dat)) {
     cli::cli_abort(
       "Argument {.arg dat} must be a {.cls data.frame} or {.cls sf} object."
+    )
+  }
+  if (!rlang::is_bool(short_names)) {
+    cli::cli_abort(
+      "Argument {.arg short_names} must be {.val TRUE} or {.val FALSE}."
     )
   }
 
@@ -57,6 +72,14 @@ build_documentation <- function(dat, tbl_description = NULL) {
     tipo_coluna = coltypes,
     valores = unlist(unique_values, use.names = FALSE)
   )
+
+  if (short_names) {
+    doc <- tibble::add_column(
+      doc,
+      short_name = make_short_names(col_names),
+      .after = "col_names"
+    )
+  }
 
   if (is.null(tbl_description)) {
     tbl_description <- tibble::tibble(
@@ -242,6 +265,7 @@ get_missing_values <- function(dat) {
 format_documentation <- function(dat) {
   rename_cols <- c(
     "Nome da Coluna" = "col_names",
+    "Nome no Shapefile" = "short_name",
     "Tipo da Coluna" = "tipo_coluna",
     "Valores" = "valores",
     "Descri\u00e7\u00e3o" = "description",
