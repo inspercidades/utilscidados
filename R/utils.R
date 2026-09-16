@@ -10,12 +10,14 @@
 #' @keywords internal
 #' @noRd
 clean_file_name <- function(file_name) {
-  return(file_name |>
-    stringr::str_to_lower() |>
-    stringr::str_replace_all("[^a-z0-9_]+", "_") |>
-    stringr::str_replace_all("_{2,}", "_") |>
-    stringr::str_remove("^_+") |>
-    stringr::str_remove("_+$"))
+  return(
+    file_name |>
+      stringr::str_to_lower() |>
+      stringr::str_replace_all("[^a-z0-9_]+", "_") |>
+      stringr::str_replace_all("_{2,}", "_") |>
+      stringr::str_remove("^_+") |>
+      stringr::str_remove("_+$")
+  )
 }
 
 #' Resolve an output directory, creating it if needed
@@ -135,7 +137,9 @@ write_via_spec <- function(spec, dat, out_dir, clean_name, overwrite) {
     spec$path_fn(dat, out_dir, clean_name)
   }
 
-  if (!is.null(spec$pre)) spec$pre(dat)
+  if (!is.null(spec$pre)) {
+    spec$pre(dat)
+  }
 
   if (file.exists(path) && !overwrite) {
     cli::cli_warn(paste0(

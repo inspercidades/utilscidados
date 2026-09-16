@@ -39,7 +39,9 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
   required_cols <- c("file", "label")
   missing_cols <- setdiff(required_cols, names(files))
   if (length(missing_cols) > 0) {
-    cli::cli_abort("{.arg files} is missing required column{?s}: {.val {missing_cols}}.")
+    cli::cli_abort(
+      "{.arg files} is missing required column{?s}: {.val {missing_cols}}."
+    )
   }
   if (!is.data.frame(join_keys)) {
     cli::cli_abort("{.arg join_keys} must be a data frame.")
@@ -73,11 +75,16 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
   )
 
   for (i in seq_len(nrow(files))) {
-    desc <- if (has_desc && nzchar(files$description[i])) files$description[i] else "[TODO]"
+    desc <- if (has_desc && nzchar(files$description[i])) {
+      files$description[i]
+    } else {
+      "[TODO]"
+    }
     lines <- c(lines, paste0("| `", files$file[i], "` | ", desc, " |"))
   }
 
-  lines <- c(lines,
+  lines <- c(
+    lines,
     "",
     "### Join Keys",
     "",
@@ -86,10 +93,14 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
   )
 
   for (i in seq_len(nrow(join_keys))) {
-    lines <- c(lines, paste0("| `", join_keys$table[i], "` | `", join_keys$key[i], "` |"))
+    lines <- c(
+      lines,
+      paste0("| `", join_keys$table[i], "` | `", join_keys$key[i], "` |")
+    )
   }
 
-  lines <- c(lines,
+  lines <- c(
+    lines,
     "",
     "## Notes",
     "",
@@ -110,11 +121,16 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
   )
 
   for (i in seq_len(nrow(files))) {
-    desc <- if (has_desc && nzchar(files$description[i])) files$description[i] else "[TODO]"
+    desc <- if (has_desc && nzchar(files$description[i])) {
+      files$description[i]
+    } else {
+      "[TODO]"
+    }
     lines <- c(lines, paste0("| `", files$file[i], "` | ", desc, " |"))
   }
 
-  lines <- c(lines,
+  lines <- c(
+    lines,
     "",
     "### Chaves de Jun\u00e7\u00e3o",
     "",
@@ -123,10 +139,14 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
   )
 
   for (i in seq_len(nrow(join_keys))) {
-    lines <- c(lines, paste0("| `", join_keys$table[i], "` | `", join_keys$key[i], "` |"))
+    lines <- c(
+      lines,
+      paste0("| `", join_keys$table[i], "` | `", join_keys$key[i], "` |")
+    )
   }
 
-  lines <- c(lines,
+  lines <- c(
+    lines,
     "",
     "## Notas",
     "",

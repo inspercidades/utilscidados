@@ -115,8 +115,12 @@ export_table <- function(
       "Argument {.arg dat} must be a {.cls data.frame}, {.cls tibble}, or {.cls data.table}."
     )
   }
-  if (missing(file_name) || !is.character(file_name) || length(file_name) != 1) {
-    cli::cli_abort("Argument {.arg file_name} must be a single character string.")
+  if (
+    missing(file_name) || !is.character(file_name) || length(file_name) != 1
+  ) {
+    cli::cli_abort(
+      "Argument {.arg file_name} must be a single character string."
+    )
   }
 
   valid_ext <- c("all", "dataverse", names(TABLE_FORMATS))

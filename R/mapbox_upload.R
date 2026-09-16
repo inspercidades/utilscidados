@@ -87,7 +87,9 @@ mapbox_upload <- function(
   if (missing(username) || !is.character(username) || length(username) != 1) {
     cli::cli_abort("{.arg username} must be a single Mapbox username.")
   }
-  if (missing(tileset_id) || !is.character(tileset_id) || length(tileset_id) != 1) {
+  if (
+    missing(tileset_id) || !is.character(tileset_id) || length(tileset_id) != 1
+  ) {
     cli::cli_abort(
       "{.arg tileset_id} must be a single character slug (the part after the username)."
     )
@@ -104,7 +106,9 @@ mapbox_upload <- function(
       "Sanitised {.arg tileset_id}: {.val {tileset_id}} -> {.val {clean_id}}"
     )
   }
-  if (is.null(tileset_name)) tileset_name <- clean_id
+  if (is.null(tileset_name)) {
+    tileset_name <- clean_id
+  }
 
   # Optional simplification --------------------------------------------------
   if (!isFALSE(simplify) && inherits(shp, "sf")) {
