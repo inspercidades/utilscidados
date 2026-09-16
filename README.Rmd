@@ -1,0 +1,137 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# utilscidados
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/inspercidades/utilscidados/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/inspercidades/utilscidados/actions/workflows/R-CMD-check.yaml)
+[![Lint](https://github.com/inspercidades/utilscidados/actions/workflows/lint.yaml/badge.svg)](https://github.com/inspercidades/utilscidados/actions/workflows/lint.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
+
+Internal helpers for data work at Insper Cidades (ONMS and Cidados).
+
+## Installation
+
+```r
+# install.packages("remotes")
+remotes::install_github("inspercidades/utilscidados")
+```
+
+## What it does
+
+The package supports two recurring workflows:
+
+1.  **Dataverse exports.** Datasets published to Insper's Dataverse need
+    multiple file formats, consistent naming, and a column-level data
+    dictionary. `export_table()` / `export_shapefile()` produce the
+    Dataverse-compliant set in one call; `build_documentation()`,
+    `create_documentation_index()` and `build_readme()` generate the
+    accompanying documentation; `read_metadata()`, `update_metadata()`,
+    `create_metadata_sheet()` and `validate_metadata()` manage the
+    Dataverse metadata workbook.
+
+2.  **GeoPortal (Mapbox Studio) uploads.** `export_shapefile()`
+    reprojects to WGS84 (EPSG:4326), sanitises file names, and writes
+    GeoJSON/GeoPackage ready to upload. `mapbox_upload()` pushes a layer
+    straight to Mapbox Studio.
+
+## Functions
+
+| Function                         | Purpose                                                       |
+|----------------------------------|---------------------------------------------------------------|
+| `export_table()`                 | Write a data frame to csv, xlsx, parquet, rds and/or feather  |
+| `export_shapefile()`             | Write an `sf` object to geojson, gpkg, shp and/or geoparquet  |
+| `export_tables_to_excel()`       | Write a named list of data frames to a multi-sheet xlsx file  |
+| `mapbox_upload()`                | Upload an `sf` object to Mapbox Studio (GeoPortal) as a tileset |
+| `build_documentation()`          | Build a column-level data dictionary for a dataset            |
+| `create_documentation_index()`   | Build an index mapping file names to table/sheet names        |
+| `build_readme()`                 | Generate a bilingual (EN/PT) README.txt skeleton              |
+| `read_metadata()`                | Read field values from a Dataverse metadata workbook          |
+| `update_metadata()`              | Write field values into a Dataverse metadata workbook         |
+| `create_metadata_sheet()`        | Clone a template sheet for a new dataset in the workbook      |
+| `validate_metadata()`            | Check a metadata sheet for missing fields or placeholders     |
+
+All exporters sanitise `file_name` (filesystem-safe on every platform),
+create `out_dir` if needed, and skip existing files unless
+`overwrite = TRUE`. `extension = "dataverse"` selects the
+Dataverse-compliant subset (csv + xlsx + parquet for tables; geojson +
+gpkg + shp + geoparquet for spatial).
+
+## Examples
+
+### Dataverse export
+
+```r
+library(utilscidados)
+
+# 1. Export the data in Dataverse-friendly formats
+export_table(
+  my_table,
+  "indicadores municipais 2024", # sanitised to "indicadores_municipais_2024"
+  out_dir = "dataverse-out",
+  extension = "dataverse"
+)
+
+# 2. Build the column-level data dictionary
+descs <- tibble::tibble(
+  col_names = c("cod_mun", "nome_mun", "pop_2022"),
+  description = c(
+    "Codigo IBGE do municipio",
+    "Nome do municipio",
+    "Populacao residente no Censo 2022"
+  )
+)
+doc <- build_documentation(my_table, tbl_description = descs)
+
+# 3. Bundle the index + per-table docs into a single workbook
+index <- create_documentation_index(
+  name_file = "indicadores_municipais_2024.csv",
+  name_table = "indicadores_municipais_2024"
+)
+export_tables_to_excel(
+  tables = list(indice = index, indicadores_municipais_2024 = doc),
+  file_name = "dataverse-out/metadados.xlsx"
+)
+```
+
+### GeoPortal upload
+
+```r
+camadas <- sf::st_read("source/camada_zoneamento.shp")
+
+# Option A — write WGS84 files locally for manual upload / archiving
+export_shapefile(
+  camadas,
+  "zoneamento_municipal",
+  out_dir = "mapbox-upload",
+  extension = c("geojson", "gpkg"),
+  overwrite = TRUE
+)
+
+# Option B — upload directly to Mapbox Studio in one call.
+# Requires the suggested mapboxapi package and MAPBOX_SECRET_TOKEN in env.
+mapbox_upload(
+  camadas,
+  username = "insper_cidados",
+  tileset_id = "zoneamento_municipal",
+  simplify = 0.1, # rmapshaper::ms_simplify(keep = 0.1)
+  wait = TRUE
+)
+```
+
+## Scope
+
+Internal package, not intended for CRAN — but kept CRAN-compliant so
+`R CMD check` passes cleanly.
