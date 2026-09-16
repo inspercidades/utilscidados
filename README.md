@@ -1,43 +1,39 @@
 # utilscidados
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/inspercidades/utilscidados/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/inspercidades/utilscidados/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/inspercidades/utilscidados/graph/badge.svg)](https://app.codecov.io/gh/inspercidades/utilscidados)
+[![Lint](https://github.com/inspercidades/utilscidados/actions/workflows/lint.yaml/badge.svg)](https://github.com/inspercidades/utilscidados/actions/workflows/lint.yaml)
 <!-- badges: end -->
 
 Internal helpers for data work at Insper Cidades (ONMS and Cidados).
 
-## Goals
-
-The package exists to support two recurring workflows:
-
-1.  **Standardise data exports for Insper's Dataverse.** Datasets
-    published to Dataverse have to be shipped in several file formats
-    with consistent naming conventions and a column-level data
-    dictionary (metadata). `utilscidados` provides exporters
-    (`export_table()`, `export_shapefile()`) that produce the full
-    Dataverse-compliant set in one call, plus
-    `build_documentation()` / `create_documentation_index()` to
-    generate the documentation tables that accompany the data,
-    `build_readme()` to scaffold the bilingual README that ships
-    alongside a dataset, and `read_metadata()` / `update_metadata()` /
-    `create_metadata_sheet()` / `validate_metadata()` to manage the
-    Dataverse metadata workbook itself.
-
-2.  **Simplify the shapefile -> Mapbox Studio (GeoPortal) pipeline.**
-    GeoPortal ingests GeoJSON / GeoPackage, in WGS84, with predictable
-    file names. `export_shapefile()` reprojects to EPSG:4326, sanitises
-    the file name, and writes both formats so a layer is ready to
-    upload to Mapbox Studio without any per-dataset wrangling.
-
 ## Installation
-
-You can install the development version from GitHub with:
 
 ``` r
 # install.packages("remotes")
 remotes::install_github("portalcidados/utilscidados")
 ```
 
-## Overview
+## What it does
+
+The package supports two recurring workflows:
+
+1. **Dataverse exports.** Datasets published to Insper's Dataverse need
+   multiple file formats, consistent naming, and a column-level data
+   dictionary. `export_table()` / `export_shapefile()` produce the
+   Dataverse-compliant set in one call; `build_documentation()`,
+   `create_documentation_index()` and `build_readme()` generate the
+   accompanying documentation; `read_metadata()`, `update_metadata()`,
+   `create_metadata_sheet()` and `validate_metadata()` manage the
+   Dataverse metadata workbook.
+
+2. **GeoPortal (Mapbox Studio) uploads.** `export_shapefile()`
+   reprojects to WGS84 (EPSG:4326), sanitises file names, and writes
+   GeoJSON/GeoPackage ready to upload. `mapbox_upload()` pushes a layer
+   straight to Mapbox Studio.
+
+## Functions
 
 | Function                       | Purpose                                                       |
 | ------------------------------ | ------------------------------------------------------------- |
@@ -53,21 +49,15 @@ remotes::install_github("portalcidados/utilscidados")
 | `create_metadata_sheet()`      | Clone a template sheet for a new dataset in the workbook      |
 | `validate_metadata()`          | Check a metadata sheet for missing fields or placeholders     |
 
-Shared conventions across exporters:
-
-* `file_name` is sanitised (lower-cased, special characters replaced
-  with `_`) so the same input produces a filesystem-safe name on
-  every platform.
-* `out_dir` is created if it does not exist.
-* Existing files are skipped with a warning unless `overwrite = TRUE`.
-* `extension = "dataverse"` selects the Dataverse-compliant subset
-  (csv + xlsx + parquet for tables; geojson + gpkg + shp + geoparquet
-  for spatial).
-* All progress and result messages use the cli package.
+All exporters sanitise `file_name` (filesystem-safe on every platform),
+create `out_dir` if needed, and skip existing files unless
+`overwrite = TRUE`. `extension = "dataverse"` selects the
+Dataverse-compliant subset (csv + xlsx + parquet for tables; geojson +
+gpkg + shp + geoparquet for spatial).
 
 ## Examples
 
-### Dataverse export workflow
+### Dataverse export
 
 ``` r
 library(utilscidados)
@@ -100,7 +90,7 @@ export_tables_to_excel(
 )
 ```
 
-### GeoPortal (Mapbox Studio) upload workflow
+### GeoPortal upload
 
 ``` r
 camadas <- sf::st_read("source/camada_zoneamento.shp")
@@ -127,6 +117,5 @@ mapbox_upload(
 
 ## Scope
 
-This is an internal package; it is not intended for CRAN. We try to
-keep it CRAN-compliant nonetheless so that `R CMD check` passes
-cleanly.
+Internal package, not intended for CRAN — but kept CRAN-compliant so
+`R CMD check` passes cleanly.
