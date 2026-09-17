@@ -1,0 +1,14 @@
+linters: linters_with_defaults(
+    # Explicit return() is the project convention.
+    return_linter = NULL,
+    # AIR does not enforce an 80-column limit; rest of codebase follows it loosely.
+    line_length_linter = NULL,
+    # object_usage_linter false-positives on glue/{} interpolation in cli strings.
+    object_usage_linter = NULL,
+    # Fires on commented-out code inside vignette R chunks.
+    commented_code_linter = NULL,
+    # SCREAMING_SNAKE_CASE constants are accepted.
+    object_name_linter = object_name_linter(styles = c("snake_case", "symbols", "SNAKE_CASE")),
+    # AIR's continuation indent differs from the linter's expectation.
+    indentation_linter = NULL
+    )
