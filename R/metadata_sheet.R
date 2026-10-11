@@ -61,7 +61,23 @@ field_map <- list(
 #' }
 update_metadata <- function(file_path, sheet_name, updates) {
   wb <- openxlsx::loadWorkbook(file_path)
-  df <- openxlsx::readWorkbook(wb, sheet = sheet_name, colNames = FALSE)
+  df <- update_metadata_workbook(wb, sheet_name, updates)
+  openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+
+  cli::cli_inform("Updated {.val {sheet_name}} in {.file {file_path}}.")
+  return(invisible(df))
+}
+
+update_metadata_workbook <- function(wb, sheet_name, updates) {
+  # shortcut: templates must start on row 1; parse cell coordinates if leading blank rows are needed.
+  df <- openxlsx::readWorkbook(
+    wb,
+    sheet = sheet_name,
+    colNames = FALSE,
+    skipEmptyRows = FALSE,
+    skipEmptyCols = FALSE
+  )
+  changes <- list()
 
   for (field_key in names(updates)) {
     field_name <- field_map[[field_key]]
@@ -81,27 +97,48 @@ update_metadata <- function(file_path, sheet_name, updates) {
       next
     }
 
-    if (length(row_idx) > 1) {
-      if (field_key %in% c("subject", "contact", "geographic_coverage")) {
-        n_vals <- length(new_value)
-        for (i in seq_len(n_vals)) {
-          if (i <= length(row_idx)) {
-            df[row_idx[i], 3] <- new_value[i]
-          }
-        }
-        next
+    if (field_key %in% c("subject", "contact", "geographic_coverage")) {
+      if (length(new_value) > length(row_idx)) {
+        cli::cli_abort(
+          "{.arg {field_key}} has {length(new_value)} values, but the template has only {length(row_idx)} rows."
+        )
       }
-      row_idx <- row_idx[1]
+      df[row_idx, 3] <- NA_character_
+      if (length(new_value) > 0) {
+        df[row_idx[seq_along(new_value)], 3] <- new_value
+      }
+      changes[[length(changes) + 1]] <- list(rows = row_idx, values = new_value)
+      next
     }
 
+    row_idx <- row_idx[1]
     df[row_idx, 3] <- new_value
+    changes[[length(changes) + 1]] <- list(rows = row_idx, values = new_value)
   }
 
-  openxlsx::writeData(wb, sheet = sheet_name, x = df, colNames = FALSE)
-  openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
+  for (change in changes) {
+    openxlsx::deleteData(
+      wb,
+      sheet = sheet_name,
+      cols = 3,
+      rows = change$rows,
+      gridExpand = TRUE
+    )
+    for (i in seq_along(change$values)) {
+      if (!is.na(change$values[i])) {
+        openxlsx::writeData(
+          wb,
+          sheet = sheet_name,
+          x = change$values[i],
+          startCol = 3,
+          startRow = change$rows[i],
+          colNames = FALSE
+        )
+      }
+    }
+  }
 
-  cli::cli_inform("Updated {.val {sheet_name}} in {.file {file_path}}.")
-  return(invisible(df))
+  return(df)
 }
 
 #' Read metadata values from a metadata sheet
@@ -190,23 +227,16 @@ create_metadata_sheet <- function(
     cli::cli_abort("Sheet {.val {new_sheet_name}} already exists.")
   }
 
-  template_data <- openxlsx::readWorkbook(
+  openxlsx::cloneWorksheet(
     wb,
-    sheet = template_sheet,
-    colNames = FALSE
+    sheetName = new_sheet_name,
+    clonedSheet = template_sheet
   )
-  openxlsx::addWorksheet(wb, sheetName = new_sheet_name)
-  openxlsx::writeData(
-    wb,
-    sheet = new_sheet_name,
-    x = template_data,
-    colNames = FALSE
-  )
-  openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
 
   if (!is.null(initial_values)) {
-    update_metadata(file_path, new_sheet_name, initial_values)
+    update_metadata_workbook(wb, new_sheet_name, initial_values)
   }
+  openxlsx::saveWorkbook(wb, file_path, overwrite = TRUE)
 
   cli::cli_inform(
     "Created sheet {.val {new_sheet_name}} in {.file {file_path}}."

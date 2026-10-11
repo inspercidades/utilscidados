@@ -15,6 +15,8 @@
 #' @param title Character scalar with the dataset collection title.
 #' @param out_dir Directory where \code{README.txt} is written. Defaults
 #'   to \code{getwd()}. Created if it does not exist.
+#' @param overwrite Logical. If \code{TRUE}, replace an existing
+#'   \code{README.txt}. Defaults to \code{FALSE}.
 #'
 #' @return Invisibly returns the path to the written file.
 #' @export
@@ -32,7 +34,13 @@
 #' )
 #' build_readme(files, keys, title = "Municipal Data Collection")
 #' }
-build_readme <- function(files, join_keys, title, out_dir = getwd()) {
+build_readme <- function(
+  files,
+  join_keys,
+  title,
+  out_dir = getwd(),
+  overwrite = FALSE
+) {
   if (!is.data.frame(files)) {
     cli::cli_abort("{.arg files} must be a data frame.")
   }
@@ -49,8 +57,17 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
   if (missing(title) || !is.character(title) || length(title) != 1) {
     cli::cli_abort("{.arg title} must be a single character string.")
   }
+  if (!is.logical(overwrite) || length(overwrite) != 1 || is.na(overwrite)) {
+    cli::cli_abort("{.arg overwrite} must be TRUE or FALSE.")
+  }
   if (!dir.exists(out_dir)) {
     dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  }
+  path <- file.path(out_dir, "README.txt")
+  if (file.exists(path) && !overwrite) {
+    cli::cli_abort(
+      "File {.file {path}} already exists. Use {.arg overwrite = TRUE} to replace it."
+    )
   }
 
   has_desc <- "description" %in% names(files)
@@ -154,7 +171,6 @@ build_readme <- function(files, join_keys, title, out_dir = getwd()) {
     ""
   )
 
-  path <- file.path(out_dir, "README.txt")
   writeLines(lines, path, useBytes = TRUE)
   cli::cli_inform("Generated README skeleton: {.file {path}}.")
   return(invisible(path))

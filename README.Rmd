@@ -63,9 +63,10 @@ The package supports two recurring workflows:
 | `create_metadata_sheet()`        | Clone a template sheet for a new dataset in the workbook      |
 | `validate_metadata()`            | Check a metadata sheet for missing fields or placeholders     |
 
-All exporters sanitise `file_name` (filesystem-safe on every platform),
-create `out_dir` if needed, and skip existing files unless
-`overwrite = TRUE`. `extension = "dataverse"` selects the
+Table and spatial exporters sanitise `file_name`, create `out_dir` if
+needed, and skip existing files unless `overwrite = TRUE`. The Excel
+workbook and README writers instead stop when their output exists;
+pass `overwrite = TRUE` to replace it. `extension = "dataverse"` selects the
 Dataverse-compliant subset (csv + xlsx + parquet for tables; geojson +
 gpkg + shp + geoparquet for spatial).
 
