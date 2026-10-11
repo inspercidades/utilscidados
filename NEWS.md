@@ -1,5 +1,7 @@
 # utilscidados (development version)
 
+* `build_readme()` now writes `[TODO]` for `NA` descriptions instead of
+  the literal text `NA` (#18).
 * `make_short_names()` shortens column names to fit a byte limit (10 by
   default, the Shapefile limit) while keeping them unique (#3).
 * `export_shapefile()` now shortens Shapefile column names with
