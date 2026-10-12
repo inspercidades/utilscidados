@@ -92,7 +92,11 @@ build_readme <- function(
   )
 
   for (i in seq_len(nrow(files))) {
-    desc <- if (has_desc && nzchar(files$description[i])) {
+    desc <- if (
+      has_desc &&
+        !is.na(files$description[i]) &&
+        nzchar(files$description[i])
+    ) {
       files$description[i]
     } else {
       "[TODO]"
@@ -138,7 +142,11 @@ build_readme <- function(
   )
 
   for (i in seq_len(nrow(files))) {
-    desc <- if (has_desc && nzchar(files$description[i])) {
+    desc <- if (
+      has_desc &&
+        !is.na(files$description[i]) &&
+        nzchar(files$description[i])
+    ) {
       files$description[i]
     } else {
       "[TODO]"

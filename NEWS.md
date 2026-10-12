@@ -6,7 +6,8 @@
   after initial values are applied successfully (#9).
 * `update_metadata()` clears stale repeated values and rejects updates
   beyond the template's row capacity (#10).
-
+* `build_readme()` now writes `[TODO]` for `NA` descriptions instead of
+  the literal text `NA` (#18).
 * `make_short_names()` shortens column names to fit a byte limit (10 by
   default, the Shapefile limit) while keeping them unique (#3).
 * `export_shapefile()` now shortens Shapefile column names with
