@@ -104,3 +104,77 @@ test_that("build_documentation() omits shapefile names by default", {
   doc <- build_documentation(data.frame(id = 1:2))
   expect_false("Nome no Shapefile" %in% names(doc))
 })
+
+test_that("build_documentation validates description schema and keys", {
+  dat <- data.frame(a = 1:2, b = c("x", "y"))
+
+  expect_error(build_documentation(dat, tbl_description = 1), "tbl_description")
+  expect_error(
+    build_documentation(dat, tbl_description = data.frame(col_names = "a")),
+    "tbl_description"
+  )
+  expect_error(
+    build_documentation(
+      dat,
+      tbl_description = data.frame(col_names = 1, description = "A")
+    ),
+    "col_names"
+  )
+  expect_error(
+    build_documentation(
+      dat,
+      tbl_description = data.frame(col_names = "a", description = 1)
+    ),
+    "description"
+  )
+  expect_error(
+    build_documentation(
+      dat,
+      tbl_description = data.frame(
+        col_names = c("a", "a"),
+        description = c("First", "Second")
+      )
+    ),
+    "col_names"
+  )
+
+  doc <- build_documentation(
+    dat,
+    tbl_description = data.frame(col_names = "a", description = "First")
+  )
+  expect_equal(nrow(doc), ncol(dat))
+  expect_equal(doc[["Nome da Coluna"]], names(dat))
+  expect_equal(doc[["Descrição"]][1], "First.")
+  expect_true(is.na(doc[["Descrição"]][2]))
+})
+
+test_that("build_documentation handles missing and date-time ranges", {
+  dat <- data.frame(
+    date = as.Date(c(NA, NA)),
+    timestamp = as.POSIXct(
+      c("2024-01-01 12:34:56", "2024-01-02 14:00:00"),
+      tz = "UTC"
+    )
+  )
+
+  expect_no_warning(doc <- build_documentation(dat))
+  expect_equal(doc[["Valores"]][1], "-")
+  expect_match(doc[["Valores"]][2], "2024-01-01 12:34:56")
+  expect_match(doc[["Valores"]][2], "2024-01-02 14:00:00")
+})
+
+test_that("build_documentation handles zero-row columns", {
+  dat <- data.frame(
+    date = as.Date(character()),
+    timestamp = as.POSIXct(character(), tz = "UTC"),
+    amount = numeric()
+  )
+
+  expect_no_warning(doc <- build_documentation(dat))
+  expect_equal(nrow(doc), ncol(dat))
+  expect_equal(doc[["Valores"]][1:2], c("-", "-"))
+  expect_type(doc[["Percentual de Obs. Ausentes"]], "double")
+  expect_true(all(is.na(doc[["Percentual de Obs. Ausentes"]])))
+  expect_true(all(is.na(doc[["Percentual de Preenchimento"]])))
+  expect_false(any(is.nan(doc[["Percentual de Obs. Ausentes"]])))
+})
