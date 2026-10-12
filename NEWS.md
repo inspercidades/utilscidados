@@ -1,5 +1,10 @@
 # utilscidados (development version)
 
+* Table, spatial, and Mapbox exports now reject names that become empty
+  after sanitizing, before creating files or submitting uploads (#13).
+* `build_documentation()` now rejects invalid or duplicate manual column
+  descriptions and handles empty date, datetime, and zero-row columns
+  without infinite ranges or `NaN` percentages (#16, #17).
 * `build_readme()` and `export_tables_to_excel()` now preserve existing
   outputs by default; pass `overwrite = TRUE` to replace them (#12).
 * `create_metadata_sheet()` clones template formatting and saves only

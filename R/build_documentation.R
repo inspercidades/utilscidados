@@ -56,6 +56,32 @@ build_documentation <- function(
       "Argument {.arg short_names} must be {.val TRUE} or {.val FALSE}."
     )
   }
+  if (!is.null(tbl_description)) {
+    if (!is.data.frame(tbl_description)) {
+      cli::cli_abort("Argument {.arg tbl_description} must be a data frame.")
+    }
+    required_cols <- c("col_names", "description")
+    if (!all(required_cols %in% names(tbl_description))) {
+      cli::cli_abort(
+        "Argument {.arg tbl_description} must contain {.val col_names} and {.val description} columns."
+      )
+    }
+    if (!is.character(tbl_description$col_names)) {
+      cli::cli_abort(
+        "Column {.field col_names} in {.arg tbl_description} must be character."
+      )
+    }
+    if (!is.character(tbl_description$description)) {
+      cli::cli_abort(
+        "Column {.field description} in {.arg tbl_description} must be character."
+      )
+    }
+    if (anyDuplicated(tbl_description$col_names)) {
+      cli::cli_abort(
+        "Column {.field col_names} in {.arg tbl_description} must be unique."
+      )
+    }
+  }
 
   col_names <- names(dat)
   coltypes <- vapply(
@@ -148,7 +174,11 @@ get_unique_values <- function(dat) {
   is_text <- vapply(dat, \(x) is.character(x) || is.factor(x), logical(1))
   txt_cols <- col_names[is_text]
   lgl_cols <- col_names[vapply(dat, is.logical, logical(1))]
-  date_cols <- col_names[vapply(dat, \(x) inherits(x, "Date"), logical(1))]
+  date_cols <- col_names[vapply(
+    dat,
+    \(x) inherits(x, "Date") || inherits(x, "POSIXt"),
+    logical(1)
+  )]
   num_cols <- col_names[vapply(dat, is.numeric, logical(1))]
 
   result <- character(ncol(dat))
@@ -176,7 +206,13 @@ get_unique_values <- function(dat) {
   if (length(date_cols) > 0) {
     date_range <- vapply(
       dat[date_cols],
-      \(x) stringr::str_c(min(x, na.rm = TRUE), " / ", max(x, na.rm = TRUE)),
+      \(x) {
+        valid <- x[!is.na(x)]
+        if (length(valid) == 0) {
+          return("-")
+        }
+        return(stringr::str_c(min(valid), " / ", max(valid)))
+      },
       character(1)
     )
     result[date_cols] <- date_range
@@ -244,8 +280,16 @@ get_missing_values <- function(dat) {
         list(
           total_obs = ~ length(.x),
           missing_count = ~ sum(is.na(.x)),
-          missing_percent = ~ round(100 * sum(is.na(.x)) / length(.x), 2),
-          non_na_percent = ~ round(100 * sum(!is.na(.x)) / length(.x), 2)
+          missing_percent = ~ if (length(.x) == 0) {
+            NA_real_
+          } else {
+            round(100 * sum(is.na(.x)) / length(.x), 2)
+          },
+          non_na_percent = ~ if (length(.x) == 0) {
+            NA_real_
+          } else {
+            round(100 * sum(!is.na(.x)) / length(.x), 2)
+          }
         )
       )) |>
       tidyr::pivot_longer(

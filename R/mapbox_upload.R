@@ -82,8 +82,6 @@ mapbox_upload <- function(
   wait = FALSE,
   poll_interval = 5
 ) {
-  rlang::check_installed("mapboxapi", reason = "to upload to Mapbox Studio.")
-
   if (missing(username) || !is.character(username) || length(username) != 1) {
     cli::cli_abort("{.arg username} must be a single Mapbox username.")
   }
@@ -94,13 +92,18 @@ mapbox_upload <- function(
       "{.arg tileset_id} must be a single character slug (the part after the username)."
     )
   }
+  clean_id <- clean_file_name(tileset_id)
+  if (is.na(clean_id) || !nzchar(clean_id)) {
+    cli::cli_abort(
+      "Argument {.arg tileset_id} must contain a letter or number."
+    )
+  }
+  rlang::check_installed("mapboxapi", reason = "to upload to Mapbox Studio.")
   if (!nzchar(access_token)) {
     cli::cli_abort(
       "No Mapbox access token. Pass {.arg access_token} or set {.envvar MAPBOX_SECRET_TOKEN}."
     )
   }
-
-  clean_id <- clean_file_name(tileset_id)
   if (clean_id != tileset_id) {
     cli::cli_inform(
       "Sanitised {.arg tileset_id}: {.val {tileset_id}} -> {.val {clean_id}}"

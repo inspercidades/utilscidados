@@ -161,6 +161,9 @@ export_shapefile <- function(
   check_extension(extension, valid_ext)
 
   clean_name <- clean_file_name(file_name)
+  if (is.na(clean_name) || !nzchar(clean_name)) {
+    cli::cli_abort("Argument {.arg file_name} must contain a letter or number.")
+  }
   out_dir <- resolve_out_dir(out_dir)
 
   formats <- resolve_formats(extension, SHP_FORMATS)
