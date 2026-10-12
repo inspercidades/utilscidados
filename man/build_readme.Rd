@@ -4,7 +4,7 @@
 \alias{build_readme}
 \title{Generate a Bilingual README.txt Skeleton}
 \usage{
-build_readme(files, join_keys, title, out_dir = getwd())
+build_readme(files, join_keys, title, out_dir = getwd(), overwrite = FALSE)
 }
 \arguments{
 \item{files}{A data frame with columns:
@@ -19,6 +19,9 @@ tables.}
 
 \item{out_dir}{Directory where \code{README.txt} is written. Defaults
 to \code{getwd()}. Created if it does not exist.}
+
+\item{overwrite}{Logical. If \code{TRUE}, replace an existing
+\code{README.txt}. Defaults to \code{FALSE}.}
 }
 \value{
 Invisibly returns the path to the written file.

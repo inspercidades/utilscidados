@@ -1,5 +1,11 @@
 # utilscidados (development version)
 
+* `build_readme()` and `export_tables_to_excel()` now preserve existing
+  outputs by default; pass `overwrite = TRUE` to replace them (#12).
+* `create_metadata_sheet()` clones template formatting and saves only
+  after initial values are applied successfully (#9).
+* `update_metadata()` clears stale repeated values and rejects updates
+  beyond the template's row capacity (#10).
 * `build_readme()` now writes `[TODO]` for `NA` descriptions instead of
   the literal text `NA` (#18).
 * `make_short_names()` shortens column names to fit a byte limit (10 by

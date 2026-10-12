@@ -141,7 +141,8 @@ export_tables_to_excel(
 
 Names of the input list become sheet names, truncated to 31 characters
 (Excel's limit) and made unique if needed. Headers are bold; column
-widths are auto-sized.
+widths are auto-sized. Pass `overwrite = TRUE` to replace an existing
+workbook.
 
 ## Building a data dictionary
 

@@ -9,7 +9,8 @@ export_tables_to_excel(
   file_name,
   font_name = "Arial",
   font_size = 11,
-  header_font_size = 12
+  header_font_size = 12,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ workbook (default \code{"Arial"}).}
 \item{font_size}{Numeric body font size (default \code{11}).}
 
 \item{header_font_size}{Numeric header font size (default \code{12}).}
+
+\item{overwrite}{Logical. If \code{TRUE}, replace an existing workbook.
+Defaults to \code{FALSE}.}
 }
 \value{
 Invisibly returns \code{file_name}.
@@ -37,9 +41,8 @@ per element, with a styled header row and auto-sized column widths.
 }
 \details{
 Sheets where the corresponding list element is not a data frame are
-skipped with a warning. The file is always written with
-\code{overwrite = TRUE} at the \code{\link[openxlsx:saveWorkbook]{openxlsx::saveWorkbook()}} step; if the path
-already exists a warning is emitted before writing.
+skipped with a warning. An existing workbook is preserved unless
+\code{overwrite = TRUE} is passed.
 }
 \examples{
 \dontrun{

@@ -15,12 +15,13 @@
 #'   workbook (default `"Arial"`).
 #' @param font_size Numeric body font size (default `11`).
 #' @param header_font_size Numeric header font size (default `12`).
+#' @param overwrite Logical. If `TRUE`, replace an existing workbook.
+#'   Defaults to `FALSE`.
 #'
 #' @details
 #' Sheets where the corresponding list element is not a data frame are
-#' skipped with a warning. The file is always written with
-#' `overwrite = TRUE` at the [openxlsx::saveWorkbook()] step; if the path
-#' already exists a warning is emitted before writing.
+#' skipped with a warning. An existing workbook is preserved unless
+#' `overwrite = TRUE` is passed.
 #'
 #' @return Invisibly returns `file_name`.
 #'
@@ -40,7 +41,8 @@ export_tables_to_excel <- function(
   file_name,
   font_name = "Arial",
   font_size = 11,
-  header_font_size = 12
+  header_font_size = 12,
+  overwrite = FALSE
 ) {
   ## Input validation ----
   if (!is.list(tables) || length(tables) == 0) {
@@ -53,17 +55,19 @@ export_tables_to_excel <- function(
       "Argument {.arg file_name} must be a single character string."
     )
   }
+  if (!is.logical(overwrite) || length(overwrite) != 1 || is.na(overwrite)) {
+    cli::cli_abort("{.arg overwrite} must be TRUE or FALSE.")
+  }
+  if (file.exists(file_name) && !overwrite) {
+    cli::cli_abort(
+      "File {.file {file_name}} already exists. Use {.arg overwrite = TRUE} to replace it."
+    )
+  }
 
   cli::cli_alert_info(
     "Starting Excel export with {.val {length(tables)}} table{?s}"
   )
   cli::cli_alert_info("Font: {.val {font_name}} (size {.val {font_size}})")
-
-  if (file.exists(file_name)) {
-    cli::cli_alert_warning(
-      "File {.file {file_name}} already exists and will be overwritten"
-    )
-  }
 
   ## Workbook setup ----
   wb <- openxlsx::createWorkbook()
@@ -137,7 +141,7 @@ export_tables_to_excel <- function(
   cli::cli_alert_info("Saving Excel file...")
   tryCatch(
     {
-      openxlsx::saveWorkbook(wb, file_name, overwrite = TRUE)
+      openxlsx::saveWorkbook(wb, file_name, overwrite = overwrite)
       cli::cli_alert_success(
         "Excel file successfully saved as {.file {file_name}}"
       )
