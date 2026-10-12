@@ -11,6 +11,12 @@ test_that("RDS export keeps the object and gzip compression", {
   expect_identical(paths, path)
   expect_identical(readRDS(path), dat)
   expect_identical(readBin(path, "raw", n = 2), as.raw(c(0x1f, 0x8b)))
+
+  # Serialization version 2 keeps files readable by R < 3.5, as readr did.
+  con <- gzfile(path, "rb")
+  withr::defer(close(con))
+  expect_identical(readChar(con, 2, useBytes = TRUE), "X\n")
+  expect_identical(readBin(con, "integer", endian = "big"), 2L)
 })
 
 test_that("XLSX export keeps columns, values, and overwrite behavior", {

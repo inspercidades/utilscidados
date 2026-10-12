@@ -46,7 +46,7 @@ TABLE_FORMATS <- list(
     ext = ".rds",
     label = "rds",
     writer = function(dat, path, overwrite) {
-      saveRDS(dat, path, compress = "gzip")
+      saveRDS(dat, path, version = 2, compress = "gzip")
     }
   ),
   feather = list(
