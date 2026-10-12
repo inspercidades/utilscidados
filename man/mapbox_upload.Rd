@@ -14,7 +14,8 @@ mapbox_upload(
   keep_geojson = FALSE,
   multipart = TRUE,
   wait = FALSE,
-  poll_interval = 5
+  poll_interval = 5,
+  max_wait = 3600
 )
 }
 \arguments{
@@ -51,6 +52,9 @@ upload as complete (or failed). If \code{FALSE} (default), returns
 immediately after submission.}
 
 \item{poll_interval}{Seconds between status polls when \code{wait = TRUE}.}
+
+\item{max_wait}{Maximum seconds to wait for processing when \code{wait = TRUE}.
+Defaults to one hour. Use \code{0} to check status once without waiting.}
 }
 \value{
 Invisibly returns the response from

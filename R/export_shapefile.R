@@ -102,6 +102,7 @@ SHP_FORMATS <- list(
 #'
 #' @details
 #' * GeoJSON is reprojected to WGS84 (EPSG:4326) before writing.
+#'   GeoPackage, Shapefile, and GeoParquet retain the input CRS.
 #' * Shapefile is written to a subdirectory named after the cleaned
 #'   file name, since a shapefile is a set of sidecar files (`.shp`,
 #'   `.shx`, `.dbf`, ...).
@@ -168,6 +169,7 @@ export_shapefile <- function(
 
   formats <- resolve_formats(extension, SHP_FORMATS)
   exported_files <- character()
+  input_epsg <- sf::st_crs(shp)$epsg
   for (fmt in formats) {
     written <- write_via_spec(
       SHP_FORMATS[[fmt]],
@@ -177,9 +179,16 @@ export_shapefile <- function(
       overwrite
     )
     exported_files <- c(exported_files, written)
+    if (length(written) > 0) {
+      epsg <- if (fmt == "geojson") 4326 else input_epsg
+      crs_label <- if (is.na(epsg)) "unknown CRS" else paste0("EPSG:", epsg)
+      cli::cli_alert_info(
+        "{SHP_FORMATS[[fmt]]$label} exported using {crs_label}."
+      )
+    }
   }
 
-  summarise_exports(exported_files, out_dir, epsg = sf::st_crs(shp)$epsg)
+  summarise_exports(exported_files, out_dir)
   return(invisible(exported_files))
 }
 

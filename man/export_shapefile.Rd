@@ -43,6 +43,7 @@ common output directory, using a sanitised base file name.
 \details{
 \itemize{
 \item GeoJSON is reprojected to WGS84 (EPSG:4326) before writing.
+GeoPackage, Shapefile, and GeoParquet retain the input CRS.
 \item Shapefile is written to a subdirectory named after the cleaned
 file name, since a shapefile is a set of sidecar files (\code{.shp},
 \code{.shx}, \code{.dbf}, ...).

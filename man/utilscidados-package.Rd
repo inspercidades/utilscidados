@@ -15,7 +15,7 @@ protocols, including file-format coverage, sanitised file names,
 column-level metadata (data dictionaries), README skeletons, and
 metadata workbook management.
 \item A simplified shapefile -> Mapbox Studio (GeoPortal) pipeline,
-with automatic reprojection to WGS84 and consistent naming.
+with WGS84 GeoJSON output and consistent naming.
 }
 }
 \section{Main functions}{
