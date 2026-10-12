@@ -7,7 +7,7 @@
 #'    column-level metadata (data dictionaries), README skeletons, and
 #'    metadata workbook management.
 #' 2. A simplified shapefile -> Mapbox Studio (GeoPortal) pipeline,
-#'    with automatic reprojection to WGS84 and consistent naming.
+#'    with WGS84 GeoJSON output and consistent naming.
 #'
 #' @section Main functions:
 #' * [export_table()] - write a data frame to csv / xlsx / parquet / rds / feather

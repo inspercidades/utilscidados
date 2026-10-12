@@ -1,5 +1,11 @@
 # utilscidados (development version)
 
+* `mapbox_upload()` validates polling settings and stops waiting after
+  `max_wait` seconds (#14).
+* `export_tables_to_excel()` keeps sheet names unique after truncation,
+  including case-insensitive collisions (#11).
+* `export_shapefile()` reports the CRS of each format; GeoJSON uses
+  EPSG:4326 and other formats retain the input CRS (#15).
 * Table, spatial, and Mapbox exports now reject names that become empty
   after sanitizing, before creating files or submitting uploads (#13).
 * `build_documentation()` now rejects invalid or duplicate manual column

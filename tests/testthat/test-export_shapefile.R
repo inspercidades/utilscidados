@@ -119,6 +119,71 @@ test_that("shapefile export does not rename columns in other formats", {
   ))
 })
 
+test_that("spatial formats report and retain their actual CRS", {
+  out_dir <- withr::local_tempdir()
+  dat <- sf::st_transform(local_long_names_sf(), 3857)
+  messages <- capture.output(
+    suppressWarnings(export_shapefile(
+      dat,
+      "pontos",
+      out_dir = out_dir,
+      extension = c("geojson", "gpkg", "shp", "geoparquet")
+    )),
+    type = "message"
+  )
+
+  expect_equal(
+    sf::st_crs(sf::st_read(
+      file.path(out_dir, "pontos.geojson"),
+      quiet = TRUE
+    ))$epsg,
+    4326
+  )
+  expect_equal(
+    sf::st_crs(sf::st_read(
+      file.path(out_dir, "pontos.gpkg"),
+      quiet = TRUE
+    ))$epsg,
+    3857
+  )
+  expect_equal(
+    sf::st_crs(sf::st_read(
+      file.path(out_dir, "pontos", "pontos.shp"),
+      quiet = TRUE
+    ))$epsg,
+    3857
+  )
+  expect_equal(
+    sf::st_crs(sfarrow::st_read_parquet(file.path(
+      out_dir,
+      "pontos.parquet"
+    )))$epsg,
+    3857
+  )
+  expect_true(any(grepl("GeoJSON.*EPSG:4326", messages)))
+  expect_true(any(grepl("GeoPackage.*EPSG:3857", messages)))
+})
+
+test_that("a CRS without an EPSG code is reported by its definition", {
+  out_dir <- withr::local_tempdir()
+  dat <- sf::st_transform(
+    local_long_names_sf(),
+    "+proj=laea +lat_0=-15 +lon_0=-50"
+  )
+  messages <- capture.output(
+    suppressWarnings(export_shapefile(
+      dat,
+      "pontos",
+      out_dir = out_dir,
+      extension = "gpkg"
+    )),
+    type = "message"
+  )
+
+  expect_true(any(grepl("GeoPackage.*\\+proj=laea", messages)))
+  expect_false(any(grepl("unknown CRS", messages)))
+})
+
 test_that("a failed shapefile write removes only shapefile components", {
   out_dir <- withr::local_tempdir()
   shp_dir <- file.path(out_dir, "pontos")

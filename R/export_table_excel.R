@@ -81,6 +81,9 @@ export_tables_to_excel <- function(
 
   ## Sheet names ----
   sheet_names <- resolve_sheet_names(tables)
+  if (anyDuplicated(tolower(sheet_names))) {
+    cli::cli_abort("Sheet names must be unique regardless of letter case.")
+  }
 
   ## Per-table write ----
   cli::cli_progress_bar("Processing tables", total = length(tables))
@@ -124,15 +127,14 @@ export_tables_to_excel <- function(
             widths = "auto"
           )
         }
-        cli::cli_progress_update()
       },
       error = function(e) {
         cli::cli_alert_danger(
           "Failed to process table {.val {sheet_name}}: {.val {e$message}}"
         )
-        cli::cli_progress_update()
       }
     )
+    cli::cli_progress_update()
   }
 
   cli::cli_progress_done()
@@ -186,7 +188,7 @@ resolve_sheet_names <- function(tables) {
   truncated <- which(nchar(original) > 31)
   if (length(truncated) > 0) {
     cli::cli_alert_warning(
-      "Sheet name{?s} truncated to 31 characters (Excel limit):"
+      "{length(truncated)} sheet name{?s} truncated to 31 characters (Excel limit):"
     )
     for (i in truncated) {
       cli::cli_alert_warning(
@@ -195,16 +197,23 @@ resolve_sheet_names <- function(tables) {
     }
   }
 
-  if (any(duplicated(sheet_names))) {
+  if (anyDuplicated(tolower(sheet_names))) {
     cli::cli_alert_warning(
       "Duplicate sheet names detected after truncation - adding suffixes"
     )
-    sheet_names <- make.unique(sheet_names, sep = "_")
-    sheet_names <- ifelse(
-      nchar(sheet_names) > 31,
-      substr(sheet_names, 1, 31),
-      sheet_names
-    )
+    used <- character()
+    for (i in seq_along(sheet_names)) {
+      base <- sheet_names[i]
+      candidate <- base
+      suffix <- 1L
+      while (tolower(candidate) %in% used) {
+        ending <- paste0("_", suffix)
+        candidate <- paste0(substr(base, 1, 31 - nchar(ending)), ending)
+        suffix <- suffix + 1L
+      }
+      sheet_names[i] <- candidate
+      used <- c(used, tolower(candidate))
+    }
   }
 
   return(sheet_names)

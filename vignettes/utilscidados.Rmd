@@ -33,9 +33,8 @@ when preparing data for two destinations:
     the documentation tables.
 
 2.  **Mapbox Studio (GeoPortal).** Spatial layers are uploaded as
-    GeoJSON or GeoPackage in WGS84. `export_shapefile()` reprojects
-    the input, sanitises the file name, and writes both formats so
-    the layer is ready to upload without manual preparation.
+    GeoJSON in WGS84. `export_shapefile()` reprojects GeoJSON and
+    preserves the input CRS in GeoPackage, Shapefile, and GeoParquet.
 
 The chunks below are not evaluated when the vignette is built; copy
 them into a session if you want to try them.
@@ -83,6 +82,7 @@ export_shapefile(nc, "north_carolina", out_dir = out, extension = "dataverse")
 Notes:
 
 * GeoJSON is reprojected to WGS84 (EPSG:4326).
+* GeoPackage, Shapefile, and GeoParquet retain the input CRS.
 * Shapefile output is placed in a subdirectory named after the file,
   because a shapefile is really a set of sidecar files (`.shp`,
   `.shx`, `.dbf`, ...).

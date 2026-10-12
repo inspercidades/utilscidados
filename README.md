@@ -29,8 +29,8 @@ The package supports two recurring workflows:
    Dataverse metadata workbook.
 
 2. **GeoPortal (Mapbox Studio) uploads.** `export_shapefile()`
-   reprojects to WGS84 (EPSG:4326), sanitises file names, and writes
-   GeoJSON/GeoPackage ready to upload. `mapbox_upload()` pushes a layer
+   reprojects GeoJSON to WGS84 (EPSG:4326) and preserves the input CRS
+   in GeoPackage, Shapefile, and GeoParquet. `mapbox_upload()` pushes a layer
    straight to Mapbox Studio.
 
 ## Functions
@@ -96,7 +96,7 @@ export_tables_to_excel(
 ``` r
 camadas <- sf::st_read("source/camada_zoneamento.shp")
 
-# Option A — write WGS84 files locally for manual upload / archiving
+# Option A — write WGS84 GeoJSON and an input-CRS GeoPackage locally
 export_shapefile(
   camadas,
   "zoneamento_municipal",

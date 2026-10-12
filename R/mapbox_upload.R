@@ -31,6 +31,8 @@
 #'   upload as complete (or failed). If `FALSE` (default), returns
 #'   immediately after submission.
 #' @param poll_interval Seconds between status polls when `wait = TRUE`.
+#' @param max_wait Maximum seconds to wait for processing when `wait = TRUE`.
+#'   Defaults to one hour. Use `0` to check status once without waiting.
 #'
 #' @return Invisibly returns the response from
 #'   [mapboxapi::upload_tiles()] (or, if `wait = TRUE`, the final
@@ -80,8 +82,31 @@ mapbox_upload <- function(
   keep_geojson = FALSE,
   multipart = TRUE,
   wait = FALSE,
-  poll_interval = 5
+  poll_interval = 5,
+  max_wait = 3600
 ) {
+  if (
+    !is.numeric(poll_interval) ||
+      length(poll_interval) != 1 ||
+      is.na(poll_interval) ||
+      !is.finite(poll_interval) ||
+      poll_interval <= 0
+  ) {
+    cli::cli_abort(
+      "{.arg poll_interval} must be one finite positive number of seconds."
+    )
+  }
+  if (
+    !is.numeric(max_wait) ||
+      length(max_wait) != 1 ||
+      is.na(max_wait) ||
+      !is.finite(max_wait) ||
+      max_wait < 0
+  ) {
+    cli::cli_abort(
+      "{.arg max_wait} must be one finite non-negative number of seconds."
+    )
+  }
   if (missing(username) || !is.character(username) || length(username) != 1) {
     cli::cli_abort("{.arg username} must be a single Mapbox username.")
   }
@@ -170,6 +195,7 @@ mapbox_upload <- function(
     "Waiting for Mapbox to finish processing tileset",
     spinner = TRUE
   )
+  started <- proc.time()[["elapsed"]]
   repeat {
     status <- mapboxapi::check_upload_status(
       upload_id = upload_id,
@@ -187,7 +213,14 @@ mapbox_upload <- function(
       cli::cli_progress_done()
       cli::cli_abort("Mapbox reported an error: {status$error}")
     }
-    Sys.sleep(poll_interval)
+    elapsed <- proc.time()[["elapsed"]] - started
+    Sys.sleep(max(0, min(poll_interval, max_wait - elapsed)))
+    if (proc.time()[["elapsed"]] - started >= max_wait) {
+      cli::cli_progress_done()
+      cli::cli_abort(
+        "Mapbox upload timed out after {max_wait} seconds (id: {upload_id})."
+      )
+    }
   }
 }
 
