@@ -29,7 +29,6 @@ Imports:
     data.table,
     dplyr,
     openxlsx,
-    readr,
     rlang,
     sf,
     sfarrow,
@@ -37,8 +36,7 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    utils,
-    writexl
+    utils
 Suggests:
     knitr,
     mapboxapi,

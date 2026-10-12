@@ -1,5 +1,9 @@
 # utilscidados (development version)
 
+* Removed unused internal workbook formatting helpers and
+  `write_with_check()` (#20).
+* Replaced `readr` and `writexl` in `export_table()` with base R and
+  `openxlsx`, while keeping RDS and XLSX export behavior (#21).
 * `mapbox_upload()` validates polling settings and stops waiting after
   `max_wait` seconds (#14).
 * `export_tables_to_excel()` keeps sheet names unique after truncation,

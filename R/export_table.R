@@ -31,7 +31,7 @@ TABLE_FORMATS <- list(
       }
     },
     writer = function(dat, path, overwrite) {
-      writexl::write_xlsx(dat, path)
+      openxlsx::write.xlsx(dat, path, sheetName = "Sheet1")
     }
   ),
   parquet = list(
@@ -46,7 +46,7 @@ TABLE_FORMATS <- list(
     ext = ".rds",
     label = "rds",
     writer = function(dat, path, overwrite) {
-      readr::write_rds(dat, path, compress = "gz")
+      saveRDS(dat, path, version = 2, compress = "gzip")
     }
   ),
   feather = list(
@@ -99,9 +99,7 @@ TABLE_FORMATS <- list(
 #'
 #' @seealso [export_shapefile()], [export_tables_to_excel()].
 #' @importFrom data.table fwrite
-#' @importFrom writexl write_xlsx
 #' @importFrom arrow write_parquet write_feather
-#' @importFrom readr write_rds
 #' @export
 export_table <- function(
   dat,
