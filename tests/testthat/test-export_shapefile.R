@@ -164,6 +164,26 @@ test_that("spatial formats report and retain their actual CRS", {
   expect_true(any(grepl("GeoPackage.*EPSG:3857", messages)))
 })
 
+test_that("a CRS without an EPSG code is reported by its definition", {
+  out_dir <- withr::local_tempdir()
+  dat <- sf::st_transform(
+    local_long_names_sf(),
+    "+proj=laea +lat_0=-15 +lon_0=-50"
+  )
+  messages <- capture.output(
+    suppressWarnings(export_shapefile(
+      dat,
+      "pontos",
+      out_dir = out_dir,
+      extension = "gpkg"
+    )),
+    type = "message"
+  )
+
+  expect_true(any(grepl("GeoPackage.*\\+proj=laea", messages)))
+  expect_false(any(grepl("unknown CRS", messages)))
+})
+
 test_that("a failed shapefile write removes only shapefile components", {
   out_dir <- withr::local_tempdir()
   shp_dir <- file.path(out_dir, "pontos")

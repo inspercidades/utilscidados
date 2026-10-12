@@ -54,3 +54,28 @@ test_that("polling returns completion, reports API errors, and times out", {
     "timed out"
   )
 })
+
+test_that("polling does not start a status request after the deadline", {
+  calls <- 0
+  local_mocked_bindings(
+    upload_tiles = function(...) list(id = "upload-1"),
+    check_upload_status = function(...) {
+      calls <<- calls + 1
+      list(complete = FALSE)
+    },
+    .package = "mapboxapi"
+  )
+  expect_error(
+    suppressMessages(mapbox_upload(
+      shp = "layer.geojson",
+      username = "user",
+      tileset_id = "layer",
+      access_token = "token",
+      wait = TRUE,
+      poll_interval = 1,
+      max_wait = 0.05
+    )),
+    "timed out"
+  )
+  expect_equal(calls, 1)
+})

@@ -169,7 +169,14 @@ export_shapefile <- function(
 
   formats <- resolve_formats(extension, SHP_FORMATS)
   exported_files <- character()
-  input_epsg <- sf::st_crs(shp)$epsg
+  input_crs <- sf::st_crs(shp)
+  input_label <- if (is.na(input_crs)) {
+    "unknown CRS"
+  } else if (!is.na(input_crs$epsg)) {
+    paste0("EPSG:", input_crs$epsg)
+  } else {
+    input_crs$input
+  }
   for (fmt in formats) {
     written <- write_via_spec(
       SHP_FORMATS[[fmt]],
@@ -180,8 +187,7 @@ export_shapefile <- function(
     )
     exported_files <- c(exported_files, written)
     if (length(written) > 0) {
-      epsg <- if (fmt == "geojson") 4326 else input_epsg
-      crs_label <- if (is.na(epsg)) "unknown CRS" else paste0("EPSG:", epsg)
+      crs_label <- if (fmt == "geojson") "EPSG:4326" else input_label
       cli::cli_alert_info(
         "{SHP_FORMATS[[fmt]]$label} exported using {crs_label}."
       )
