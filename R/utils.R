@@ -39,42 +39,6 @@ resolve_out_dir <- function(out_dir) {
   return(out_dir)
 }
 
-#' Write a file with overwrite-protection and standard logging
-#'
-#' Wraps a writer function with a consistent existence check, try/catch, and
-#' cli logging. Returns the path on success, `NULL` on skip or failure.
-#'
-#' @param path Destination file path.
-#' @param label Human-readable format label (e.g. `"csv"`, `"GeoJSON"`).
-#' @param overwrite Logical; if `FALSE` and `path` exists, the write is skipped.
-#' @param writer A function of no arguments that performs the write.
-#' @return The path (invisibly) on success, otherwise `NULL`.
-#' @keywords internal
-write_with_check <- function(path, label, overwrite, writer) {
-  if (file.exists(path) && !overwrite) {
-    cli::cli_warn(paste0(
-      "{label} file already exists: {.file {basename(path)}}. ",
-      "Use {.arg overwrite = TRUE} to replace it."
-    ))
-    return(NULL)
-  }
-
-  existed <- file.exists(path)
-
-  return(tryCatch(
-    {
-      writer()
-      action <- if (existed) "Overwritten" else "Exported"
-      cli::cli_inform("{action} {label}: {.file {basename(path)}}")
-      invisible(path)
-    },
-    error = function(e) {
-      cli::cli_warn("Failed to export {label}: {e$message}")
-      NULL
-    }
-  ))
-}
-
 #' Validate that `extension` is a subset of `valid`
 #'
 #' @param extension Character vector of requested extensions.
@@ -122,7 +86,7 @@ resolve_formats <- function(extension, registry) {
 #' Write one format from a registry spec
 #'
 #' Builds the path (via `spec$path_fn` if present), runs `spec$pre`, then
-#' calls `spec$writer` under [write_with_check()] semantics. When the
+#' calls `spec$writer` with overwrite protection. When the
 #' writer fails, `spec$cleanup` (if present) removes partial output, and
 #' `spec$strict = TRUE` turns the warning into an error.
 #'
