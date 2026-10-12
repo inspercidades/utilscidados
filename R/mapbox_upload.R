@@ -214,13 +214,13 @@ mapbox_upload <- function(
       cli::cli_abort("Mapbox reported an error: {status$error}")
     }
     elapsed <- proc.time()[["elapsed"]] - started
-    Sys.sleep(max(0, min(poll_interval, max_wait - elapsed)))
-    if (proc.time()[["elapsed"]] - started >= max_wait) {
+    if (elapsed + poll_interval > max_wait) {
       cli::cli_progress_done()
       cli::cli_abort(
-        "Mapbox upload timed out after {max_wait} seconds (id: {upload_id})."
+        "Mapbox upload timed out (limit {max_wait}s, id: {upload_id})."
       )
     }
+    Sys.sleep(poll_interval)
   }
 }
 
