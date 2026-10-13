@@ -21,20 +21,8 @@ library(utilscidados)
 
 ## What this package is for
 
-`utilscidados` collects the small helpers we use at Insper Cidades
-when preparing data for two destinations:
-
-1.  **Insper's Dataverse.** Datasets published there must ship in
-    several file formats with predictable naming and be accompanied
-    by column-level documentation. `export_table()` /
-    `export_shapefile()` produce the Dataverse-compliant set in
-    one call (`extension = "dataverse"`), while
-    `build_data_dictionary()` and `build_file_index()` build
-    the documentation tables.
-
-2.  **Mapbox Studio (GeoPortal).** Spatial layers are uploaded as
-    GeoJSON in WGS84. `export_shapefile()` reprojects GeoJSON and
-    preserves the input CRS in GeoPackage, Shapefile, and GeoParquet.
+`utilscidados` applies the data protocols of Insper Cidades, so every
+dataset we export, document, and publish follows the same rules.
 
 The chunks below are not evaluated when the vignette is built; copy
 them into a session if you want to try them.
@@ -79,14 +67,13 @@ nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
 export_shapefile(nc, "north_carolina", out_dir = out, extension = "dataverse")
 ```
 
-Notes:
+It handles CRS and files as follows.
 
 * GeoJSON is reprojected to WGS84 (EPSG:4326).
 * GeoPackage, Shapefile, and GeoParquet retain the input CRS.
 * Shapefile output is placed in a subdirectory named after the file,
-  because a shapefile is really a set of sidecar files (`.shp`,
+  because a shapefile is a set of sidecar files (`.shp`,
   `.shx`, `.dbf`, ...).
-* GeoParquet is written via `sfarrow::st_write_parquet()`.
 
 ## Uploading a layer to Mapbox Studio (GeoPortal)
 
@@ -108,12 +95,12 @@ mapbox_upload(
 )
 ```
 
-## File name sanitisation
+## File name sanitizing
 
 `export_table()`, `export_shapefile()`, and `mapbox_upload()` all
 lower-case the supplied name and replace runs of non-alphanumerics
-with `_`. The same input produces a filesystem-safe / Mapbox-safe
-name on every platform:
+with `_`. The same input produces a name that is safe for any filesystem
+and for Mapbox:
 
 ```{r}
 # These all produce the same base name: "north_carolina_2024"
@@ -124,8 +111,8 @@ export_table(iris, "North_Carolina/2024", out_dir = out)
 
 ## Multi-sheet Excel workbooks
 
-When you want a single `.xlsx` file with one sheet per data frame,
-reach for `export_tables_to_excel()`:
+`export_tables_to_excel()` writes a single `.xlsx` file with one sheet
+per data frame:
 
 ```{r}
 tables <- list(
@@ -167,7 +154,7 @@ in published documentation (`Nome da Coluna`, `Tipo da Coluna`,
 `Percentual de Preenchimento`).
 
 `build_data_dictionary()` works on plain data frames and on `sf`
-objects; if you pass `sf`, geometry is dropped before profiling.
+objects; for `sf`, it drops the geometry before profiling.
 
 When you ship more than one table, build a small index too:
 

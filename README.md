@@ -11,7 +11,8 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-Internal helpers for data work at Insper Cidades (ONMS and Cidados).
+Prepares datasets for publication on Insper’s Dataverse and spatial
+layers for upload to Mapbox Studio (GeoPortal).
 
 ## Installation
 
@@ -22,21 +23,8 @@ remotes::install_github("inspercidades/utilscidados")
 
 ## What it does
 
-The package supports two recurring workflows:
-
-1.  **Dataverse exports.** Datasets published to Insper’s Dataverse need
-    multiple file formats, consistent naming, and a column-level data
-    dictionary. `export_table()` / `export_shapefile()` produce the
-    Dataverse-compliant set in one call; `build_data_dictionary()`,
-    `build_file_index()` and `write_dataset_readme()` generate the
-    accompanying documentation; `read_metadata()`, `update_metadata()`,
-    `create_metadata_sheet()` and `validate_metadata()` manage the
-    Dataverse metadata workbook.
-
-2.  **GeoPortal (Mapbox Studio) uploads.** `export_shapefile()`
-    reprojects GeoJSON to WGS84 (EPSG:4326) and preserves the input CRS
-    in GeoPackage, Shapefile, and GeoParquet. `mapbox_upload()` pushes a
-    layer straight to Mapbox Studio.
+`utilscidados` applies the data protocols of Insper Cidades, so every
+dataset we export, document, and publish follows the same rules.
 
 ## Functions
 
@@ -54,12 +42,16 @@ The package supports two recurring workflows:
 | `create_metadata_sheet()` | Clone a template sheet for a new dataset in the workbook |
 | `validate_metadata()` | Check a metadata sheet for missing fields or placeholders |
 
-Table and spatial exporters sanitise `file_name`, create `out_dir` if
-needed, and skip existing files unless `overwrite = TRUE`. The Excel
-workbook and README writers instead stop when their output exists; pass
-`overwrite = TRUE` to replace it. `extension = "dataverse"` selects the
-Dataverse-compliant subset (csv + xlsx + parquet for tables; geojson +
-gpkg + shp + geoparquet for spatial).
+The exporters share a few rules.
+
+- `export_table()`, `export_shapefile()`, and `mapbox_upload()` sanitize
+  the file name.
+- Table and spatial exporters create `out_dir` if needed and skip
+  existing files unless `overwrite = TRUE`. The Excel workbook and
+  README writers stop instead.
+- `extension = "dataverse"` writes only the formats Dataverse accepts:
+  csv, xlsx, and parquet for tables; geojson, gpkg, shp, and geoparquet
+  for spatial data.
 
 ## Examples
 
@@ -71,7 +63,7 @@ library(utilscidados)
 # 1. Export the data in Dataverse-friendly formats
 export_table(
   my_table,
-  "indicadores municipais 2024", # sanitised to "indicadores_municipais_2024"
+  "indicadores municipais 2024", # sanitized to "indicadores_municipais_2024"
   out_dir = "dataverse-out",
   extension = "dataverse"
 )
@@ -80,9 +72,9 @@ export_table(
 descs <- tibble::tibble(
   col_names = c("cod_mun", "nome_mun", "pop_2022"),
   description = c(
-    "Codigo IBGE do municipio",
-    "Nome do municipio",
-    "Populacao residente no Censo 2022"
+    "Código IBGE do município",
+    "Nome do município",
+    "População residente no Censo 2022"
   )
 )
 doc <- build_data_dictionary(my_table, tbl_description = descs)
@@ -103,7 +95,7 @@ export_tables_to_excel(
 ``` r
 camadas <- sf::st_read("source/camada_zoneamento.shp")
 
-# Option A — write WGS84 GeoJSON and an input-CRS GeoPackage locally
+# Option A: write WGS84 GeoJSON and an input-CRS GeoPackage locally
 export_shapefile(
   camadas,
   "zoneamento_municipal",
@@ -112,7 +104,7 @@ export_shapefile(
   overwrite = TRUE
 )
 
-# Option B — upload directly to Mapbox Studio in one call.
+# Option B: upload directly to Mapbox Studio in one call.
 # Requires the suggested mapboxapi package and MAPBOX_SECRET_TOKEN in env.
 mapbox_upload(
   camadas,
@@ -122,8 +114,3 @@ mapbox_upload(
   wait = TRUE
 )
 ```
-
-## Scope
-
-Internal package, not intended for CRAN — but kept CRAN-compliant so
-`R CMD check` passes cleanly.
