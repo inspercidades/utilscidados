@@ -14,9 +14,9 @@
 #' * [export_shapefile()] - write an `sf` object to geojson / gpkg / shp / geoparquet
 #' * [export_tables_to_excel()] - write a list of data frames to a multi-sheet xlsx
 #' * [mapbox_upload()] - upload an `sf` object to Mapbox Studio as a tileset
-#' * [build_documentation()] - build a column-level data dictionary
-#' * [create_documentation_index()] - build an index of file/table names
-#' * [build_readme()] - generate a bilingual README.txt skeleton
+#' * [build_data_dictionary()] - build a column-level data dictionary
+#' * [build_file_index()] - build an index of file/table names
+#' * [write_dataset_readme()] - generate a bilingual README.txt skeleton
 #' * [read_metadata()] / [update_metadata()] - read or write values in a
 #'   Dataverse metadata workbook
 #' * [create_metadata_sheet()] - clone a template sheet for a new dataset

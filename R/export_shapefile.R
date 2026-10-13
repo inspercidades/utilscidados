@@ -108,7 +108,7 @@ SHP_FORMATS <- list(
 #'   `.shx`, `.dbf`, ...).
 #' * Shapefile column names longer than 10 bytes are shortened with
 #'   [make_short_names()]; the other formats keep the original names.
-#'   Use `build_documentation(short_names = TRUE)` to record both names
+#'   Use `build_data_dictionary(short_names = TRUE)` to record both names
 #'   in the data dictionary.
 #' * After writing, the Shapefile's feature and field counts are checked
 #'   against `shp`. A failed or incomplete Shapefile raises an error and
@@ -219,7 +219,7 @@ shorten_sf_names <- function(shp) {
     names(shp)[match(attr_cols, names(shp))] <- short
     cli::cli_inform(c(
       "i" = "Shortened {n_changed} column name{?s} to fit the Shapefile limit.",
-      " " = "Record them with {.code build_documentation(short_names = TRUE)}."
+      " " = "Record them with {.code build_data_dictionary(short_names = TRUE)}."
     ))
   }
   return(shp)

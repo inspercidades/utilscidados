@@ -1,4 +1,4 @@
-# build_readme ----
+# write_dataset_readme ----
 
 #' Generate a Bilingual README.txt Skeleton
 #'
@@ -32,9 +32,9 @@
 #'   table = c("dados_2023", "dados_2024"),
 #'   key = c("id_municipio", "id_municipio")
 #' )
-#' build_readme(files, keys, title = "Municipal Data Collection")
+#' write_dataset_readme(files, keys, title = "Municipal Data Collection")
 #' }
-build_readme <- function(
+write_dataset_readme <- function(
   files,
   join_keys,
   title,

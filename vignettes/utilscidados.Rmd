@@ -29,7 +29,7 @@ when preparing data for two destinations:
     by column-level documentation. `export_table()` /
     `export_shapefile()` produce the Dataverse-compliant set in
     one call (`extension = "dataverse"`), while
-    `build_documentation()` and `create_documentation_index()` build
+    `build_data_dictionary()` and `build_file_index()` build
     the documentation tables.
 
 2.  **Mapbox Studio (GeoPortal).** Spatial layers are uploaded as
@@ -147,7 +147,7 @@ workbook.
 ## Building a data dictionary
 
 For published datasets we usually ship a column-level data dictionary
-alongside the data. `build_documentation()` profiles each column
+alongside the data. `build_data_dictionary()` profiles each column
 (type, sample values, missingness) and merges in any manual
 descriptions you provide:
 
@@ -157,7 +157,7 @@ descs <- tibble::tibble(
   description = c("Sepal length in cm", "Iris species")
 )
 
-doc <- build_documentation(iris, tbl_description = descs)
+doc <- build_data_dictionary(iris, tbl_description = descs)
 doc
 ```
 
@@ -166,13 +166,13 @@ in published documentation (`Nome da Coluna`, `Tipo da Coluna`,
 `Valores`, `Descrição`, `Percentual de Obs. Ausentes`,
 `Percentual de Preenchimento`).
 
-`build_documentation()` works on plain data frames and on `sf`
+`build_data_dictionary()` works on plain data frames and on `sf`
 objects; if you pass `sf`, geometry is dropped before profiling.
 
 When you ship more than one table, build a small index too:
 
 ```{r}
-create_documentation_index(
+build_file_index(
   name_file = c("dados_2023.csv", "dados_2024.csv"),
   name_table = c("dados_2023", "dados_2024")
 )
@@ -182,13 +182,13 @@ In a typical publication workflow, you build the per-table docs and
 combine them with the index into one workbook:
 
 ```{r}
-docs <- lapply(list(iris, mtcars), build_documentation)
+docs <- lapply(list(iris, mtcars), build_data_dictionary)
 names(docs) <- c("iris", "mtcars")
 
 # Combine with the file/table index as the first sheet
 docs <- c(
   list(
-    `indice` = create_documentation_index(
+    `indice` = build_file_index(
       name_file = c("iris.csv", "mtcars.csv"),
       name_table = c("iris", "mtcars")
     )

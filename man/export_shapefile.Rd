@@ -49,7 +49,7 @@ file name, since a shapefile is a set of sidecar files (\code{.shp},
 \code{.shx}, \code{.dbf}, ...).
 \item Shapefile column names longer than 10 bytes are shortened with
 \code{\link[=make_short_names]{make_short_names()}}; the other formats keep the original names.
-Use \code{build_documentation(short_names = TRUE)} to record both names
+Use \code{build_data_dictionary(short_names = TRUE)} to record both names
 in the data dictionary.
 \item After writing, the Shapefile's feature and field counts are checked
 against \code{shp}. A failed or incomplete Shapefile raises an error and

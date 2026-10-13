@@ -28,7 +28,7 @@ abbreviated with \code{\link[base:abbreviate]{base::abbreviate()}} and truncated
 bytes. When two names collide, the later one gets a numeric suffix
 such as \code{"_1"}. The result depends only on \code{x}, so calling the
 function twice on the same names gives the same short names; this is
-how \code{\link[=build_documentation]{build_documentation()}} records the names a Shapefile ships
+how \code{\link[=build_data_dictionary]{build_data_dictionary()}} records the names a Shapefile ships
 with.
 }
 \examples{
@@ -36,5 +36,5 @@ make_short_names(c("id", "n_unidades_his_por_bloco", "n_unidades_hmp_por_bloco")
 
 }
 \seealso{
-\code{\link[=export_shapefile]{export_shapefile()}}, \code{\link[=build_documentation]{build_documentation()}}.
+\code{\link[=export_shapefile]{export_shapefile()}}, \code{\link[=build_data_dictionary]{build_data_dictionary()}}.
 }

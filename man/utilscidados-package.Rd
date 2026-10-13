@@ -25,9 +25,9 @@ with WGS84 GeoJSON output and consistent naming.
 \item \code{\link[=export_shapefile]{export_shapefile()}} - write an \code{sf} object to geojson / gpkg / shp / geoparquet
 \item \code{\link[=export_tables_to_excel]{export_tables_to_excel()}} - write a list of data frames to a multi-sheet xlsx
 \item \code{\link[=mapbox_upload]{mapbox_upload()}} - upload an \code{sf} object to Mapbox Studio as a tileset
-\item \code{\link[=build_documentation]{build_documentation()}} - build a column-level data dictionary
-\item \code{\link[=create_documentation_index]{create_documentation_index()}} - build an index of file/table names
-\item \code{\link[=build_readme]{build_readme()}} - generate a bilingual README.txt skeleton
+\item \code{\link[=build_data_dictionary]{build_data_dictionary()}} - build a column-level data dictionary
+\item \code{\link[=build_file_index]{build_file_index()}} - build an index of file/table names
+\item \code{\link[=write_dataset_readme]{write_dataset_readme()}} - generate a bilingual README.txt skeleton
 \item \code{\link[=read_metadata]{read_metadata()}} / \code{\link[=update_metadata]{update_metadata()}} - read or write values in a
 Dataverse metadata workbook
 \item \code{\link[=create_metadata_sheet]{create_metadata_sheet()}} - clone a template sheet for a new dataset
@@ -42,8 +42,8 @@ Dataverse-compliant subset of formats.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/portalcidados/utilscidados}
-  \item Report bugs at \url{https://github.com/portalcidados/utilscidados/issues}
+  \item \url{https://github.com/inspercidades/utilscidados}
+  \item Report bugs at \url{https://github.com/inspercidades/utilscidados/issues}
 }
 
 }
