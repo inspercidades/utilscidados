@@ -1,4 +1,4 @@
-# build_documentation ----
+# build_data_dictionary ----
 
 #' Build Column-level Documentation for a Dataset
 #'
@@ -35,10 +35,10 @@
 #'   col_names = c("Sepal.Length", "Species"),
 #'   description = c("Sepal length in cm", "Iris species")
 #' )
-#' build_documentation(iris, tbl_description = descs)
+#' build_data_dictionary(iris, tbl_description = descs)
 #' }
 #' @export
-build_documentation <- function(
+build_data_dictionary <- function(
   dat,
   tbl_description = NULL,
   short_names = FALSE
@@ -134,13 +134,13 @@ build_documentation <- function(
 #'
 #' @examples
 #' \dontrun{
-#' create_documentation_index(
+#' build_file_index(
 #'   name_file = c("dados_2023.csv", "dados_2024.csv"),
 #'   name_table = c("dados_2023", "dados_2024")
 #' )
 #' }
 #' @export
-create_documentation_index <- function(name_file, name_table) {
+build_file_index <- function(name_file, name_table) {
   if (length(name_file) != length(name_table)) {
     cli::cli_abort(
       "{.arg name_file} and {.arg name_table} must have the same length."

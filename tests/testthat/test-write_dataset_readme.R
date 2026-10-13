@@ -1,4 +1,4 @@
-test_that("build_readme protects an existing file unless overwrite is requested", {
+test_that("write_dataset_readme protects an existing file unless overwrite is requested", {
   out_dir <- withr::local_tempdir()
   path <- file.path(out_dir, "README.txt")
   writeLines("original", path)
@@ -6,16 +6,16 @@ test_that("build_readme protects an existing file unless overwrite is requested"
   keys <- data.frame(table = "data", key = "id")
 
   expect_error(
-    build_readme(files, keys, "Dataset", out_dir = out_dir),
+    write_dataset_readme(files, keys, "Dataset", out_dir = out_dir),
     "overwrite"
   )
   expect_identical(readLines(path), "original")
 
-  build_readme(files, keys, "Dataset", out_dir = out_dir, overwrite = TRUE)
+  write_dataset_readme(files, keys, "Dataset", out_dir = out_dir, overwrite = TRUE)
   expect_match(readLines(path)[1], "README")
 })
 
-test_that("build_readme writes [TODO] for missing descriptions", {
+test_that("write_dataset_readme writes [TODO] for missing descriptions", {
   keys <- data.frame(table = "a", key = "id")
   files <- data.frame(
     file = c("a.csv", "b.csv", "c.csv"),
@@ -24,7 +24,7 @@ test_that("build_readme writes [TODO] for missing descriptions", {
   )
 
   path <- suppressMessages(
-    build_readme(files, keys, title = "Test", out_dir = withr::local_tempdir())
+    write_dataset_readme(files, keys, title = "Test", out_dir = withr::local_tempdir())
   )
   lines <- readLines(path, encoding = "UTF-8")
 
@@ -34,12 +34,12 @@ test_that("build_readme writes [TODO] for missing descriptions", {
   expect_false(any(grepl("| NA |", lines, fixed = TRUE)))
 })
 
-test_that("build_readme writes [TODO] without a description column", {
+test_that("write_dataset_readme writes [TODO] without a description column", {
   keys <- data.frame(table = "a", key = "id")
   files <- data.frame(file = "a.csv", label = "A")
 
   path <- suppressMessages(
-    build_readme(files, keys, title = "Test", out_dir = withr::local_tempdir())
+    write_dataset_readme(files, keys, title = "Test", out_dir = withr::local_tempdir())
   )
 
   expect_equal(sum(readLines(path) == "| `a.csv` | [TODO] |"), 2)

@@ -18,7 +18,7 @@
 #' bytes. When two names collide, the later one gets a numeric suffix
 #' such as `"_1"`. The result depends only on `x`, so calling the
 #' function twice on the same names gives the same short names; this is
-#' how [build_documentation()] records the names a Shapefile ships
+#' how [build_data_dictionary()] records the names a Shapefile ships
 #' with.
 #'
 #' @return A character vector the same length as `x`.
@@ -26,7 +26,7 @@
 #' @examples
 #' make_short_names(c("id", "n_unidades_his_por_bloco", "n_unidades_hmp_por_bloco"))
 #'
-#' @seealso [export_shapefile()], [build_documentation()].
+#' @seealso [export_shapefile()], [build_data_dictionary()].
 #' @export
 make_short_names <- function(x, max_length = 10) {
   if (!is.character(x) || anyNA(x)) {

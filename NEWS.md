@@ -1,5 +1,10 @@
 # utilscidados (development version)
 
+* Renamed `build_readme()` to `write_dataset_readme()`. The old name
+  clashed with `devtools::build_readme()`.
+* Renamed `build_documentation()` to `build_data_dictionary()` and
+  `create_documentation_index()` to `build_file_index()`.
+
 * Removed unused internal workbook formatting helpers and
   `write_with_check()` (#20).
 * Replaced `readr` and `writexl` in `export_table()` with base R and

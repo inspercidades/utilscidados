@@ -1,6 +1,6 @@
 test_that("glimpse_text_values handles a first value of exactly 50 characters", {
   # Regression test: a column whose first unique value has cumulative
-  # nchar() of exactly 50 used to crash `build_documentation()` end-to-end
+  # nchar() of exactly 50 used to crash `build_data_dictionary()` end-to-end
   # (seen in production against pemob_2020.csv, column "1.1.1"). The old
   # boundary check (`min(tsl) > 50` to early-return, `tsl < 50` to select)
   # left a gap at exactly 50: neither branch handled it, `which()` returned
@@ -27,14 +27,14 @@ test_that("glimpse_text_values handles an all-NA character vector", {
   )
 })
 
-test_that("build_documentation() does not error on a 50-character text column", {
+test_that("build_data_dictionary() does not error on a 50-character text column", {
   dat <- data.frame(
     id = 1:2,
     label = c(strrep("a", 50), "b"),
     stringsAsFactors = FALSE
   )
 
-  expect_no_error(doc <- build_documentation(dat))
+  expect_no_error(doc <- build_data_dictionary(dat))
   expect_equal(nrow(doc), 2)
   expect_true("Nome da Coluna" %in% names(doc))
 })
@@ -87,48 +87,48 @@ test_that("get_unique_values handles mixed logical column", {
   expect_equal(out$flag, "Primeiros valores: TRUE, FALSE")
 })
 
-test_that("build_documentation() adds shapefile names when asked", {
+test_that("build_data_dictionary() adds shapefile names when asked", {
   dat <- data.frame(
     id = 1:2,
     n_unidades_his_por_bloco = c(1, 2),
     n_unidades_hmp_por_bloco = c(3, 4)
   )
 
-  doc <- build_documentation(dat, short_names = TRUE)
+  doc <- build_data_dictionary(dat, short_names = TRUE)
 
   expect_equal(names(doc)[1:2], c("Nome da Coluna", "Nome no Shapefile"))
   expect_equal(doc[["Nome no Shapefile"]], make_short_names(names(dat)))
 })
 
-test_that("build_documentation() omits shapefile names by default", {
-  doc <- build_documentation(data.frame(id = 1:2))
+test_that("build_data_dictionary() omits shapefile names by default", {
+  doc <- build_data_dictionary(data.frame(id = 1:2))
   expect_false("Nome no Shapefile" %in% names(doc))
 })
 
-test_that("build_documentation validates description schema and keys", {
+test_that("build_data_dictionary validates description schema and keys", {
   dat <- data.frame(a = 1:2, b = c("x", "y"))
 
-  expect_error(build_documentation(dat, tbl_description = 1), "tbl_description")
+  expect_error(build_data_dictionary(dat, tbl_description = 1), "tbl_description")
   expect_error(
-    build_documentation(dat, tbl_description = data.frame(col_names = "a")),
+    build_data_dictionary(dat, tbl_description = data.frame(col_names = "a")),
     "tbl_description"
   )
   expect_error(
-    build_documentation(
+    build_data_dictionary(
       dat,
       tbl_description = data.frame(col_names = 1, description = "A")
     ),
     "col_names"
   )
   expect_error(
-    build_documentation(
+    build_data_dictionary(
       dat,
       tbl_description = data.frame(col_names = "a", description = 1)
     ),
     "description"
   )
   expect_error(
-    build_documentation(
+    build_data_dictionary(
       dat,
       tbl_description = data.frame(
         col_names = c("a", "a"),
@@ -138,7 +138,7 @@ test_that("build_documentation validates description schema and keys", {
     "col_names"
   )
 
-  doc <- build_documentation(
+  doc <- build_data_dictionary(
     dat,
     tbl_description = data.frame(col_names = "a", description = "First")
   )
@@ -148,7 +148,7 @@ test_that("build_documentation validates description schema and keys", {
   expect_true(is.na(doc[["Descrição"]][2]))
 })
 
-test_that("build_documentation handles missing and date-time ranges", {
+test_that("build_data_dictionary handles missing and date-time ranges", {
   dat <- data.frame(
     date = as.Date(c(NA, NA)),
     timestamp = as.POSIXct(
@@ -157,20 +157,20 @@ test_that("build_documentation handles missing and date-time ranges", {
     )
   )
 
-  expect_no_warning(doc <- build_documentation(dat))
+  expect_no_warning(doc <- build_data_dictionary(dat))
   expect_equal(doc[["Valores"]][1], "-")
   expect_match(doc[["Valores"]][2], "2024-01-01 12:34:56")
   expect_match(doc[["Valores"]][2], "2024-01-02 14:00:00")
 })
 
-test_that("build_documentation handles zero-row columns", {
+test_that("build_data_dictionary handles zero-row columns", {
   dat <- data.frame(
     date = as.Date(character()),
     timestamp = as.POSIXct(character(), tz = "UTC"),
     amount = numeric()
   )
 
-  expect_no_warning(doc <- build_documentation(dat))
+  expect_no_warning(doc <- build_data_dictionary(dat))
   expect_equal(nrow(doc), ncol(dat))
   expect_equal(doc[["Valores"]][1:2], c("-", "-"))
   expect_type(doc[["Percentual de Obs. Ausentes"]], "double")

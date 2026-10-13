@@ -36,8 +36,8 @@ The package supports two recurring workflows:
 1.  **Dataverse exports.** Datasets published to Insper's Dataverse need
     multiple file formats, consistent naming, and a column-level data
     dictionary. `export_table()` / `export_shapefile()` produce the
-    Dataverse-compliant set in one call; `build_documentation()`,
-    `create_documentation_index()` and `build_readme()` generate the
+    Dataverse-compliant set in one call; `build_data_dictionary()`,
+    `build_file_index()` and `write_dataset_readme()` generate the
     accompanying documentation; `read_metadata()`, `update_metadata()`,
     `create_metadata_sheet()` and `validate_metadata()` manage the
     Dataverse metadata workbook.
@@ -55,9 +55,9 @@ The package supports two recurring workflows:
 | `export_shapefile()`             | Write an `sf` object to geojson, gpkg, shp and/or geoparquet  |
 | `export_tables_to_excel()`       | Write a named list of data frames to a multi-sheet xlsx file  |
 | `mapbox_upload()`                | Upload an `sf` object to Mapbox Studio (GeoPortal) as a tileset |
-| `build_documentation()`          | Build a column-level data dictionary for a dataset            |
-| `create_documentation_index()`   | Build an index mapping file names to table/sheet names        |
-| `build_readme()`                 | Generate a bilingual (EN/PT) README.txt skeleton              |
+| `build_data_dictionary()`        | Build a column-level data dictionary for a dataset            |
+| `build_file_index()`             | Build an index mapping file names to table/sheet names        |
+| `write_dataset_readme()`         | Generate a bilingual (EN/PT) README.txt skeleton              |
 | `read_metadata()`                | Read field values from a Dataverse metadata workbook          |
 | `update_metadata()`              | Write field values into a Dataverse metadata workbook         |
 | `create_metadata_sheet()`        | Clone a template sheet for a new dataset in the workbook      |
@@ -94,10 +94,10 @@ descs <- tibble::tibble(
     "Populacao residente no Censo 2022"
   )
 )
-doc <- build_documentation(my_table, tbl_description = descs)
+doc <- build_data_dictionary(my_table, tbl_description = descs)
 
 # 3. Bundle the index + per-table docs into a single workbook
-index <- create_documentation_index(
+index <- build_file_index(
   name_file = "indicadores_municipais_2024.csv",
   name_table = "indicadores_municipais_2024"
 )
