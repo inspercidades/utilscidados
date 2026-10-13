@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# utilscidados
+# utilscidados <img src="man/figures/logo.png" align="right" height="139" alt="utilscidados logo" />
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/inspercidades/utilscidados/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/inspercidades/utilscidados/actions/workflows/R-CMD-check.yaml)

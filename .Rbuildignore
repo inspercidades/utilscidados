@@ -8,3 +8,4 @@
 ^ideas$
 ^\.lintr$
 ^\.omx$
+^data-raw$
